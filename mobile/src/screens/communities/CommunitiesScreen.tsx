@@ -15,7 +15,7 @@ import { CommunityCard, EventCard } from '../../features/community/CommunityCard
 import { useCommunities, useEvents, useMemberships } from '../../hooks/useData';
 import type { CommunitiesStackParamList } from '../../navigation/types';
 import type { Community, CommunityEvent } from '../../types/domain';
-import { radius, spacing } from '../../theme';
+import { MIN_TOUCH_TARGET, radius, spacing } from '../../theme';
 
 type Props = NativeStackScreenProps<CommunitiesStackParamList, 'CommunitiesHome'>;
 
@@ -243,10 +243,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
     paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.lg,
     borderRadius: radius.pill,
     borderWidth: StyleSheet.hairlineWidth * 2,
-    minHeight: 38,
+    minHeight: MIN_TOUCH_TARGET,
   },
   tabs: { flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' },
   tab: {
@@ -254,10 +254,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
     paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.lg,
     borderRadius: radius.pill,
     borderWidth: StyleSheet.hairlineWidth * 2,
-    minHeight: 38,
+    minHeight: MIN_TOUCH_TARGET,
   },
   list: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxxl, flexGrow: 1 },
   separator: { height: spacing.md },

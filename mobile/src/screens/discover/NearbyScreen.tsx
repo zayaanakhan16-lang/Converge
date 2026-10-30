@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
-import { Compass, MapPin, Navigation, Users } from 'lucide-react-native';
+import { Compass, MapPin, Navigation, ShieldCheck, Users } from 'lucide-react-native';
 
 import { Button, InlineMessage } from '../../components/ui/Button';
 import { Avatar, Chip } from '../../components/ui/Chip';
@@ -11,7 +11,7 @@ import { FadeIn } from '../../components/motion';
 import { useLocation } from '../../context/LocationContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useNearbyCommunities, useNearbyPeople } from '../../hooks/useData';
-import { spacing, radius } from '../../theme';
+import { MIN_TOUCH_TARGET, spacing, radius } from '../../theme';
 import type { NearbyStackParamList } from '../../navigation/types';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
@@ -84,11 +84,7 @@ export function NearbyScreen({ navigation }: Props) {
               SEARCHING AROUND
             </Text>
             <Text token="title3">{areaLabel ?? 'No area set'}</Text>
-            {area ? (
-              <Text token="caption" tone="muted">
-                Approximate area only. Converge never stores your exact position.
-              </Text>
-            ) : (
+            {area ? null : (
               <Text token="caption" tone="muted">
                 Share your approximate area, or search for a city, to see who is around.
               </Text>
@@ -118,6 +114,15 @@ export function NearbyScreen({ navigation }: Props) {
             style={styles.areaButton}
           />
         </View>
+
+        {area ? (
+          <View style={styles.assurance}>
+            <ShieldCheck size={14} color={theme.colors.success} strokeWidth={2.2} />
+            <Text token="caption" tone="secondary" style={styles.assuranceText}>
+              Approximate area only. Converge never stores your exact position.
+            </Text>
+          </View>
+        ) : null}
 
         {error ? <InlineMessage tone="info" message={error} /> : null}
         {!error && permission === 'denied' ? (
@@ -350,6 +355,7 @@ function TabButton({
       onPress={onPress}
       accessibilityRole="tab"
       accessibilityState={{ selected: active }}
+      accessibilityLabel={`${label}, ${count}${active ? ', showing' : ''}`}
       style={[
         styles.tab,
         active && { borderBottomColor: theme.colors.accent, borderBottomWidth: 2 },
@@ -358,9 +364,19 @@ function TabButton({
       <Text token="title3" tone={active ? 'primary' : 'secondary'}>
         {label}
       </Text>
-      <Text token="caption" tone="muted">
-        {count}
-      </Text>
+      <View
+        style={[
+          styles.tabCount,
+          {
+            backgroundColor: active ? theme.colors.accentSoft : theme.colors.surfaceSunken,
+            borderColor: active ? theme.colors.accent : theme.colors.border,
+          },
+        ]}
+      >
+        <Text token="caption" tone={active ? 'accent' : 'muted'}>
+          {count}
+        </Text>
+      </View>
     </Pressable>
   );
 }
@@ -381,14 +397,27 @@ const styles = StyleSheet.create({
   areaActions: { flexDirection: 'row', gap: spacing.sm },
   areaButton: { flex: 1 },
   radiusRow: { flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' },
-  tabs: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth * 2, gap: spacing.lg },
+  tabs: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth * 2, gap: spacing.xl },
   tab: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.xs,
-    paddingVertical: spacing.sm,
-    paddingBottom: spacing.sm + 2,
+    gap: spacing.sm,
+    // The strip is the primary way to move between the two lists, so each tab
+    // is a full-height target rather than the height of its text.
+    minHeight: MIN_TOUCH_TARGET,
+    paddingBottom: spacing.sm,
   },
+  tabCount: {
+    minWidth: 26,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 1,
+    borderRadius: radius.pill,
+    borderWidth: StyleSheet.hairlineWidth * 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  assurance: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  assuranceText: { flex: 1 },
   list: { paddingBottom: spacing.xl * 2 },
   personCard: {
     flexDirection: 'row',

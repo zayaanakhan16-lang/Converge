@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '../../components/ui/Text';
 import { WaveformBars } from './WaveformBars';
 import { useTheme } from '../../context/ThemeContext';
-import { radius, spacing } from '../../theme';
+import { MIN_TOUCH_TARGET, radius, spacing } from '../../theme';
 import type { Message } from '../../types/domain';
 import { formatClockTime } from '../../utils/format';
 
@@ -169,5 +169,13 @@ const styles = StyleSheet.create({
   toggle: { marginTop: spacing.xxs },
   voice: { marginTop: spacing.xxs, gap: spacing.xxs },
   waveform: { marginTop: spacing.xxs, maxWidth: 220 },
-  report: { padding: spacing.xs, paddingBottom: spacing.lg },
+  report: {
+    // The report affordance is a 14px icon; it needs a full target so it can be
+    // hit deliberately rather than by accident on a small phone.
+    minWidth: MIN_TOUCH_TARGET,
+    minHeight: MIN_TOUCH_TARGET,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingBottom: spacing.lg,
+  },
 });

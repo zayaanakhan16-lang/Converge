@@ -21,7 +21,7 @@ import { useVoiceNoteRecorder } from '../../hooks/useVoiceNoteRecorder';
 import { voiceNoteWaveform } from '../../services/native/audio';
 import type { MessagesStackParamList } from '../../navigation/types';
 import { repository } from '../../services';
-import { radius, spacing } from '../../theme';
+import { MIN_TOUCH_TARGET, radius, spacing } from '../../theme';
 import { REPORT_REASONS, type Message, type ReportReason } from '../../types/domain';
 import { ATTACHMENT_RULES } from '../../utils/validation';
 
@@ -413,9 +413,22 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth * 2,
     gap: spacing.md,
   },
-  headerIdentity: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, flex: 1 },
+  headerIdentity: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    flex: 1,
+    minHeight: MIN_TOUCH_TARGET,
+  },
   headerText: { flex: 1, gap: spacing.xxs },
-  headerAction: { padding: spacing.sm },
+  headerAction: {
+    // Icon-only control in the header; the icon is 19px, so the target is
+    // padded out to the app's minimum rather than left at icon size.
+    minWidth: MIN_TOUCH_TARGET,
+    minHeight: MIN_TOUCH_TARGET,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   panel: { padding: spacing.lg, gap: spacing.md },
   panelHeader: {
     flexDirection: 'row',
