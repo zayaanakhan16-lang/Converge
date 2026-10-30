@@ -77,6 +77,16 @@ function useStackScreenOptions() {
   };
 }
 
+/**
+ * Unread badge on a tab.
+ *
+ * The tab bar renders this outside the themed text component, so it needs the
+ * brand face set explicitly; without it the count falls back to the system font
+ * and reads as a different product. Inter is used because the numerals are
+ * tabular and stay centred as the count grows.
+ */
+const badgeFont = { ...typography.mono, fontSize: 10, lineHeight: 14 } as const;
+
 function DiscoverNavigator() {
   const options = useStackScreenOptions();
   return (
@@ -298,6 +308,8 @@ export function MainTabs() {
   const connections = useConnections();
   const conversations = useConversations();
 
+  const badgeStyle = { ...badgeFont, backgroundColor: theme.colors.accent };
+
   const pendingRequests = connections.data.incoming.length;
   const unreadMessages = conversations.data.reduce(
     (total, conversation) => total + conversation.unreadCount,
@@ -361,7 +373,7 @@ export function MainTabs() {
             <Handshake size={size ?? 22} color={color} strokeWidth={2} />
           ),
           tabBarBadge: pendingRequests > 0 ? pendingRequests : undefined,
-          tabBarBadgeStyle: { backgroundColor: theme.colors.accent, fontSize: 10 },
+          tabBarBadgeStyle: badgeStyle,
         }}
       />
       <Tab.Screen
@@ -373,7 +385,7 @@ export function MainTabs() {
             <MessageSquareText size={size ?? 22} color={color} strokeWidth={2} />
           ),
           tabBarBadge: unreadMessages > 0 ? unreadMessages : undefined,
-          tabBarBadgeStyle: { backgroundColor: theme.colors.accent, fontSize: 10 },
+          tabBarBadgeStyle: badgeStyle,
         }}
       />
       <Tab.Screen

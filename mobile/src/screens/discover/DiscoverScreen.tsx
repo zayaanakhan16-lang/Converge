@@ -1,5 +1,5 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { SlidersHorizontal } from 'lucide-react-native';
+import { MapPin, SlidersHorizontal } from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 
@@ -14,6 +14,7 @@ import { aiUnavailableReason } from '../../constants/config';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useMatches } from '../../hooks/useData';
+import { useLocation } from '../../context/LocationContext';
 import {
   EMPTY_FILTERS,
   activeFilterCount,
@@ -36,6 +37,7 @@ type Props = NativeStackScreenProps<DiscoverStackParamList, 'DiscoverHome'>;
 export function DiscoverScreen({ navigation, route }: Props) {
   const { theme } = useTheme();
   const { profile, isDemoMode, demoReason } = useAuth();
+  const { area, source } = useLocation();
   const [filters, setFilters] = useState<DiscoverFilters>(EMPTY_FILTERS);
   const [search, setSearch] = useState('');
   const matches = useMatches(filters);
@@ -96,6 +98,8 @@ export function DiscoverScreen({ navigation, route }: Props) {
     [navigation, theme.colors.border],
   );
 
+  const areaLabel = area ? (area.areaLabel ?? area.city ?? 'your area') : null;
+
   if (!profile) return <LoadingState label="Preparing discovery" />;
 
   return (
@@ -134,10 +138,30 @@ export function DiscoverScreen({ navigation, route }: Props) {
           </Pressable>
         </View>
 
-        <Text token="caption" tone="secondary" style={styles.subtitle}>
-          Recommendations are ranked from shared interests, complementary skills, goals,
-          language and community membership. Every card shows its reasons.
-        </Text>
+        {/* Where recommendations are drawn from. Stating the area here means a
+            member never has to guess why someone appeared, and it gives the one
+            obvious route to widen the search. */}
+        <Pressable
+          onPress={() => navigation.getParent()?.navigate('Nearby')}
+          accessibilityRole="button"
+          accessibilityLabel={
+            area ? `Searching near ${areaLabel}. Change area` : 'Choose a search area'
+          }
+          style={[
+            styles.contextRow,
+            { backgroundColor: theme.colors.surfaceSunken, borderColor: theme.colors.border },
+          ]}
+        >
+          <MapPin size={15} color={theme.colors.accent} strokeWidth={2.1} />
+          <Text token="caption" tone="secondary" style={styles.contextText} numberOfLines={1}>
+            {area
+              ? `Near ${areaLabel}${source === 'manual' ? ' · chosen area' : ''}`
+              : 'No search area set · showing everyone'}
+          </Text>
+          <Text token="caption" tone="accent">
+            {area ? 'Change' : 'Set area'}
+          </Text>
+        </Pressable>
 
         <SearchField
           value={search}
@@ -231,9 +255,15 @@ export function DiscoverScreen({ navigation, route }: Props) {
               />
             ) : null}
             {filtered.length > 0 ? (
-              <Text token="label" tone="muted">
-                {filtered.length} {filtered.length === 1 ? 'RECOMMENDATION' : 'RECOMMENDATIONS'}
-              </Text>
+              <View style={styles.resultStrip}>
+                <Text token="label" tone="muted">
+                  {filtered.length}{' '}
+                  {filtered.length === 1 ? 'RECOMMENDATION' : 'RECOMMENDATIONS'}
+                </Text>
+                <Text token="caption" tone="muted">
+                  Ranked by shared signal, strongest first
+                </Text>
+              </View>
             ) : null}
           </View>
         }
@@ -293,7 +323,16 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  subtitle: { maxWidth: 520 },
+  contextRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+    minHeight: 40,
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth * 2,
+  },
+  contextText: { flex: 1 },
   filterButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -306,6 +345,12 @@ const styles = StyleSheet.create({
   activeFilters: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   list: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxxl },
   listHeader: { gap: spacing.lg, paddingBottom: spacing.lg },
+  resultStrip: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+  },
   separator: { height: spacing.md },
   cardActions: { flexDirection: 'row', gap: spacing.sm },
   action: {

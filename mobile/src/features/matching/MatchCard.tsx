@@ -1,6 +1,7 @@
 import {
   Activity,
   Building2,
+  ChevronRight,
   Compass,
   GraduationCap,
   Languages,
@@ -13,6 +14,7 @@ import type { MatchReason, MatchResult } from '../../types/domain';
 import { useTheme } from '../../context/ThemeContext';
 import { radius, spacing } from '../../theme';
 import { Avatar, Chip } from '../../components/ui/Chip';
+import { PressableScale } from '../../components/motion';
 import { Text } from '../../components/ui/Text';
 
 const REASON_ICONS: Record<MatchReason['kind'], typeof Sparkles> = {
@@ -79,9 +81,19 @@ export interface MatchCardProps {
   footer?: React.ReactNode;
 }
 
+/**
+ * A recommendation card.
+ *
+ * The composition leads with identity (who), then the single strongest reason
+ * (why), then the supporting evidence in a quieter block, then shared
+ * interests, then the actions. One idea per band, so the eye has a path down
+ * the card instead of meeting six equally weighted rows.
+ */
 export function MatchCard({ result, onPress, footer }: MatchCardProps) {
   const { theme } = useTheme();
   const { profile } = result;
+  const [lead, ...rest] = result.reasons;
+  const LeadIcon = lead ? REASON_ICONS[lead.kind] : Sparkles;
 
   return (
     <View
@@ -90,17 +102,16 @@ export function MatchCard({ result, onPress, footer }: MatchCardProps) {
         { backgroundColor: theme.colors.surface, borderColor: theme.colors.border },
       ]}
     >
-      <View
+      <PressableScale
         accessibilityRole="button"
-        accessibilityLabel={`${profile.displayName}. ${result.reasons[0]?.detail ?? 'Recommended member'}`}
-        onStartShouldSetResponder={() => true}
-        onResponderRelease={onPress}
+        accessibilityLabel={`${profile.displayName}. ${lead?.detail ?? 'Recommended member'}`}
+        onPress={onPress}
         style={styles.header}
       >
         <Avatar
           name={profile.displayName}
           uri={profile.avatarUrl}
-          size={48}
+          size={52}
           showAvailability={profile.privacy.allowConnectionRequests}
           availabilityLabel="Open to connection requests"
         />
@@ -112,9 +123,31 @@ export function MatchCard({ result, onPress, footer }: MatchCardProps) {
             {profile.headline ?? 'No headline yet'}
           </Text>
         </View>
-      </View>
+        <ChevronRight size={18} color={theme.colors.textMuted} strokeWidth={2} />
+      </PressableScale>
 
-      <MatchReasons reasons={result.reasons} limit={3} />
+      {lead ? (
+        <View style={styles.lead}>
+          <LeadIcon size={16} color={theme.colors.accent} strokeWidth={2.2} />
+          <Text token="bodyStrong" style={styles.leadText}>
+            {lead.detail}
+          </Text>
+        </View>
+      ) : null}
+
+      {rest.length > 0 ? (
+        <View
+          style={[
+            styles.evidence,
+            { backgroundColor: theme.colors.surfaceSunken, borderColor: theme.colors.border },
+          ]}
+        >
+          <Text token="label" tone="muted" style={styles.evidenceLabel}>
+            ALSO IN COMMON
+          </Text>
+          <MatchReasons reasons={rest} />
+        </View>
+      ) : null}
 
       {result.sharedInterests.length > 0 ? (
         <View style={styles.chipRow}>
@@ -138,6 +171,15 @@ const styles = StyleSheet.create({
   },
   header: { flexDirection: 'row', gap: spacing.md, alignItems: 'center' },
   headerText: { flex: 1, gap: spacing.xxs },
+  lead: { flexDirection: 'row', gap: spacing.sm, alignItems: 'flex-start' },
+  leadText: { flex: 1 },
+  evidence: {
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth * 2,
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
+  evidenceLabel: { letterSpacing: 0.9 },
   reasons: { gap: spacing.sm },
   reasonRow: { flexDirection: 'row', gap: spacing.sm, alignItems: 'flex-start' },
   reasonText: { flex: 1 },

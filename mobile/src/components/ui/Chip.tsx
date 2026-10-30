@@ -31,20 +31,30 @@ export function Chip({
 }: ChipProps) {
   const { theme } = useTheme();
 
-  const background = selected
+  // A read-only chip sits inside a surface, so it must not use that same
+  // surface as its own fill or it disappears. It is given the sunken tone
+  // instead, which reads as a quiet attribute label in both themes.
+  const accentTint = selected || readOnly;
+  const background = accentTint
     ? tone === 'accent'
       ? theme.colors.accentSoft
-      : theme.colors.primary
+      : selected
+        ? theme.colors.primary
+        : theme.colors.surfaceSunken
     : theme.colors.surface;
-  const border = selected
+  const border = accentTint
     ? tone === 'accent'
       ? theme.colors.accent
-      : theme.colors.primary
+      : selected
+        ? theme.colors.primary
+        : theme.colors.borderStrong
     : theme.colors.border;
-  const colour = selected
+  const colour = accentTint
     ? tone === 'accent'
       ? theme.colors.accent
-      : theme.colors.onPrimary
+      : selected
+        ? theme.colors.onPrimary
+        : theme.colors.textSecondary
     : theme.colors.textSecondary;
 
   const content = (
