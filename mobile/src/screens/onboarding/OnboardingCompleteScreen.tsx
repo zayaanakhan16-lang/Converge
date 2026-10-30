@@ -40,15 +40,15 @@ export function OnboardingCompleteScreen({ navigation }: Props) {
   const submit = async () => {
     setSubmitError(null);
     try {
-      let avatarUrl: string | null = null;
+      // `uploadAvatar` stores the object and records its path on the profile,
+      // so the photo is not part of the update payload below.
       if (draft.avatarLocalUri && draft.avatarMimeType) {
-        avatarUrl = await uploadAvatar(draft.avatarLocalUri, draft.avatarMimeType);
+        await uploadAvatar(draft.avatarLocalUri, draft.avatarMimeType);
       }
       await updateProfile({
         displayName: draft.displayName.trim(),
         headline: draft.headline.trim() || null,
         bio: draft.bio.trim() || null,
-        avatarUrl,
         interests: draft.interests,
         skills: draft.skills,
         learningSkills: draft.learningSkills,

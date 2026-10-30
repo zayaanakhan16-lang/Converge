@@ -369,11 +369,31 @@ export class DemoRepository implements Repository {
     return next;
   }
 
+  /**
+   * Photo upload in demo mode.
+   *
+   * Demo mode is an in-memory dataset with no storage backend, so there is
+   * nowhere to put a file. The message says exactly that rather than implying a
+   * misconfiguration the reader could fix.
+   */
   async uploadAvatar(): Promise<string> {
     throw new RepositoryError(
-      'Photo upload needs a configured Supabase project and storage bucket.',
+      'Demo mode has no photo storage. Connect a Supabase project to upload a profile photo.',
       'not-permitted',
     );
+  }
+
+  /** Nothing is stored in demo mode, so there is nothing to remove. */
+  async deleteAvatar(): Promise<void> {
+    await delay(20);
+  }
+
+  /**
+   * Demo profiles carry an inline photo URL already, so no signing is needed.
+   * Returning an empty map lets screens fall back to `profile.avatarUrl`.
+   */
+  async resolveAvatarUrls(): Promise<Record<string, string>> {
+    return {};
   }
 
   // ---- matching ---------------------------------------------------------

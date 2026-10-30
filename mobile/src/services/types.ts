@@ -41,7 +41,11 @@ export interface ProfileUpdate {
   displayName?: string;
   headline?: string | null;
   bio?: string | null;
-  avatarUrl?: string | null;
+  /**
+   * Object key inside the private avatars bucket. Screens never set this to a
+   * URL: the URL is signed on read.
+   */
+  avatarPath?: string | null;
   interests?: string[];
   skills?: string[];
   learningSkills?: string[];
@@ -123,7 +127,23 @@ export interface Repository {
   getProfile(userId: string): Promise<Profile | null>;
   listProfiles(options?: { excludeIds?: string[] }): Promise<Profile[]>;
   updateProfile(userId: string, update: ProfileUpdate): Promise<Profile>;
+  /**
+   * Upload a profile photo into the caller's private folder.
+   *
+   * Resolves to the object path, not a URL. The bucket is private, so a URL
+   * would be useless without a signature anyway.
+   */
   uploadAvatar(userId: string, localUri: string, mimeType: string): Promise<string>;
+  /** Remove the caller's stored photo. */
+  deleteAvatar(userId: string): Promise<void>;
+  /**
+   * Exchange stored photo paths for short-lived signed URLs.
+   *
+   * Returns a map from profile id to URL, omitting profiles the caller is not
+   * permitted to see. Storage refuses to sign an object the caller cannot read,
+   * so an omitted id means denied rather than merely absent.
+   */
+  resolveAvatarUrls(profileIds: string[]): Promise<Record<string, string>>;
 
   // ---- matching ----
   getMatches(viewerId: string, filters: DiscoverFilters): Promise<MatchResult[]>;

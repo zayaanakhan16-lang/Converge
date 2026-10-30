@@ -62,81 +62,100 @@ type TextStyle = {
   textTransform?: 'uppercase';
 };
 
-const manrope = {
-  regular: 'Manrope-Regular',
-  medium: 'Manrope-Medium',
-  semibold: 'Manrope-SemiBold',
-  bold: 'Manrope-Bold',
+/**
+ * Two typefaces, each doing one job.
+ *
+ * Plus Jakarta Sans carries display and titles: geometric, slightly
+ * humanist, and distinctive at large sizes without becoming decorative.
+ * Inter carries body, captions and message text, where its larger x-height
+ * and open apertures hold up at 13-15px on a low-density phone screen.
+ *
+ * Inter is also used for numerals that need to line up (timestamps, counts),
+ * because its figures are tabular by default.
+ */
+const jakarta = {
+  regular: 'Jakarta-Regular',
+  medium: 'Jakarta-Medium',
+  semibold: 'Jakarta-SemiBold',
+  bold: 'Jakarta-Bold',
+  extrabold: 'Jakarta-ExtraBold',
 } as const;
 
-const fraunces = { semibold: 'Fraunces-SemiBold' } as const;
+const inter = {
+  regular: 'Inter-Regular',
+  medium: 'Inter-Medium',
+  semibold: 'Inter-SemiBold',
+  bold: 'Inter-Bold',
+} as const;
 
 /**
- * Type scale. Fraunces carries display and screen titles only; Manrope carries
- * everything else, which keeps the editorial voice without hurting legibility
- * at body sizes.
+ * Type scale.
+ *
+ * Display and titles are Plus Jakarta Sans with tightened tracking; body and
+ * below are Inter. Line heights are set for reading comfort rather than
+ * mathematical consistency, which is why they are not a single ratio.
  */
 export const typography = {
   display: {
-    fontFamily: fraunces.semibold,
-    fontSize: 32,
+    fontFamily: jakarta.extrabold,
+    fontSize: 33,
     lineHeight: 38,
     letterSpacing: -0.4,
   },
   title1: {
-    fontFamily: fraunces.semibold,
-    fontSize: 26,
+    fontFamily: jakarta.bold,
+    fontSize: 27,
     lineHeight: 32,
     letterSpacing: -0.2,
   },
   title2: {
-    fontFamily: manrope.bold,
-    fontSize: 20,
+    fontFamily: jakarta.bold,
+    fontSize: 21,
     lineHeight: 26,
     letterSpacing: -0.2,
   },
   title3: {
-    fontFamily: manrope.semibold,
+    fontFamily: jakarta.semibold,
     fontSize: 17,
     lineHeight: 23,
     letterSpacing: -0.1,
   },
   body: {
-    fontFamily: manrope.regular,
+    fontFamily: inter.regular,
     fontSize: 15.5,
     lineHeight: 22,
     letterSpacing: 0,
   },
   bodyStrong: {
-    fontFamily: manrope.semibold,
+    fontFamily: inter.semibold,
     fontSize: 15.5,
     lineHeight: 22,
     letterSpacing: 0,
   },
   caption: {
-    fontFamily: manrope.medium,
+    fontFamily: inter.medium,
     fontSize: 13,
     lineHeight: 18,
     letterSpacing: 0,
   },
   label: {
-    fontFamily: manrope.semibold,
-    fontSize: 12,
+    fontFamily: jakarta.bold,
+    fontSize: 11.5,
     lineHeight: 16,
     letterSpacing: 0.9,
     textTransform: 'uppercase' as const,
   },
   button: {
-    fontFamily: manrope.semibold,
+    fontFamily: jakarta.semibold,
     fontSize: 15,
     lineHeight: 20,
     letterSpacing: 0.1,
   },
   mono: {
-    fontFamily: manrope.medium,
+    fontFamily: inter.medium,
     fontSize: 13,
     lineHeight: 18,
-    letterSpacing: 0.4,
+    letterSpacing: 0.2,
   },
 } as const satisfies Record<string, TextStyle>;
 

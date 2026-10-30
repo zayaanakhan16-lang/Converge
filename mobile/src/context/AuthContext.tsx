@@ -32,7 +32,22 @@ interface AuthContextValue {
   requestPasswordReset(email: string): Promise<void>;
   updatePassword(newPassword: string): Promise<void>;
   updateProfile(update: ProfileUpdate): Promise<Profile>;
+  /**
+   * Upload a new profile photo, replacing any existing one.
+   *
+   * Resolves to a signed URL ready for display. The object itself lives in a
+   * private bucket; the URL expires, so it is refreshed by `refreshAvatar`.
+   */
   uploadAvatar(localUri: string, mimeType: string): Promise<string>;
+  /** Remove the stored photo and clear it from the profile. */
+  removeAvatar(): Promise<void>;
+  /**
+   * Re-sign the signed-in member's own photo URL.
+   *
+   * Called after an upload and when a screen has held a URL long enough that it
+   * may have expired. Safe to call when no photo exists.
+   */
+  refreshAvatar(): Promise<string | null>;
   deleteAccount(): Promise<void>;
   clearError(): void;
 }
@@ -153,9 +168,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     (localUri: string, mimeType: string) =>
       run(async () => {
         if (!user) throw new RepositoryError('You need to be signed in.', 'not-authenticated');
-        const url = await repo.uploadAvatar(user.id, localUri, mimeType);
-        const profile = await repo.updateProfile(user.id, { avatarUrl: url });
+        // Store the object path, then immediately sign a URL for display. The
+        // path is the durable value; the URL is derived and short-lived.
+        const path = await repo.uploadAvatar(user.id, localUri, mimeType);
+        const stored = await repo.updateProfile(user.id, { avatarPath: path });
+        const urls = await repo.resolveAvatarUrls([user.id]);
+        const profile = { ...stored, avatarUrl: urls[user.id] ?? null };
         setUser((current) => (current ? { ...current, profile } : current));
+        if (!profile.avatarUrl) {
+          throw new RepositoryError(
+            'The photo uploaded but could not be displayed. Check that the avatars bucket exists.',
+            'unknown',
+          );
+        }
+        return profile.avatarUrl;
+      }),
+    [repo, run, user],
+  );
+
+  const removeAvatar = useCallback(
+    () =>
+      run(async () => {
+        if (!user) throw new RepositoryError('You need to be signed in.', 'not-authenticated');
+        await repo.deleteAvatar(user.id);
+        const profile = await repo.updateProfile(user.id, { avatarPath: null });
+        setUser((current) => (current ? { ...current, profile: { ...profile, avatarUrl: null } } : current));
+      }),
+    [repo, run, user],
+  );
+
+  const refreshAvatar = useCallback(
+    () =>
+      run(async () => {
+        if (!user) throw new RepositoryError('You need to be signed in.', 'not-authenticated');
+        const urls = await repo.resolveAvatarUrls([user.id]);
+        const url = urls[user.id] ?? null;
+        setUser((current) =>
+          current ? { ...current, profile: { ...current.profile, avatarUrl: url } } : current,
+        );
         return url;
       }),
     [repo, run, user],
@@ -187,6 +237,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       updatePassword,
       updateProfile,
       uploadAvatar,
+      removeAvatar,
+      refreshAvatar,
       deleteAccount,
       clearError: () => setError(null),
     }),
@@ -202,6 +254,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       updatePassword,
       updateProfile,
       uploadAvatar,
+      removeAvatar,
+      refreshAvatar,
       deleteAccount,
     ],
   );

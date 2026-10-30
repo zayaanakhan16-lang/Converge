@@ -76,7 +76,9 @@ export interface Database {
 export interface ProfileRow {
   id: string;
   display_name: string;
-  avatar_url: string | null;
+  /** Object key inside the private `avatars` bucket. Not a URL. */
+  avatar_path: string | null;
+  photo_visibility: 'public' | 'community' | 'connections' | 'private';
   headline: string | null;
   bio: string | null;
   visibility: 'community' | 'discoverable' | 'private';

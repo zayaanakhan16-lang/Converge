@@ -68,7 +68,7 @@ export function ConvergeLogo({
         <Text
           token="title2"
           color={wordmarkColour ?? colour}
-          style={{ fontFamily: 'Fraunces-SemiBold', marginLeft: size * 0.3 }}
+          style={{ fontFamily: 'Jakarta-Bold', marginLeft: size * 0.3 }}
           accessibilityElementsHidden
           importantForAccessibility="no"
         >

@@ -82,6 +82,15 @@ const PROFILE_SELECT = `*,
   profile_goals(goal_id),
   profile_activities(activity_id)`;
 
+/**
+ * Lifetime of a signed avatar URL.
+ *
+ * Long enough that a screen does not visibly re-fetch while in use, short
+ * enough that a leaked URL stops working quickly. Signed URLs are cached per
+ * session and refreshed on demand rather than stored.
+ */
+const AVATAR_URL_TTL_SECONDS = 60 * 30;
+
 export class SupabaseRepository implements Repository {
   readonly kind = 'supabase' as const;
 
@@ -99,7 +108,9 @@ export class SupabaseRepository implements Repository {
     return {
       id: row.id,
       displayName: row.display_name,
-      avatarUrl: row.avatar_url,
+      // A stored path, not a URL: it is signed on demand so the private bucket
+      // stays private. Lists show initials until `resolveAvatarUrls` fills it.
+      avatarUrl: null,
       headline: row.headline,
       bio: row.bio,
       interests: (row.profile_interests ?? []).map((i) => i.interest_id),
@@ -121,6 +132,7 @@ export class SupabaseRepository implements Repository {
         shareApproximateLocation: row.share_approximate_location,
         allowConnectionRequests: row.allow_connection_requests,
         showInCommunityLists: row.show_in_community_lists,
+        photoVisibility: row.photo_visibility,
       },
       notifications: {
         connectionRequests: row.notify_connection_requests,
@@ -398,7 +410,7 @@ export class SupabaseRepository implements Repository {
     if (update.displayName !== undefined) patch.display_name = update.displayName.trim();
     if (update.headline !== undefined) patch.headline = update.headline;
     if (update.bio !== undefined) patch.bio = update.bio;
-    if (update.avatarUrl !== undefined) patch.avatar_url = update.avatarUrl;
+    if (update.avatarPath !== undefined) patch.avatar_path = update.avatarPath;
     if (update.onboardingCompleted !== undefined) {
       patch.onboarding_completed = update.onboardingCompleted;
     }
@@ -490,9 +502,18 @@ export class SupabaseRepository implements Repository {
     return this.loadProfile(userId);
   }
 
+  /**
+   * Upload a profile photo into the caller's private folder.
+   *
+   * Returns the object path. The bucket is private, so no public URL exists to
+   * return; readers are issued a short-lived signed URL instead, and only if
+   * the storage policy admits them.
+   *
+   * The object key is `<userId>/avatar.<ext>`, which is what the storage insert
+   * policy checks against `auth.uid()`.
+   */
   async uploadAvatar(userId: string, localUri: string, mimeType: string): Promise<string> {
     const extension = mimeType.split('/')[1]?.replace('jpeg', 'jpg') ?? 'jpg';
-    // One object per user keeps storage tidy and makes replacement idempotent.
     const path = `${userId}/avatar.${extension}`;
     const response = await fetch(localUri);
     const blob = await response.blob();
@@ -500,8 +521,59 @@ export class SupabaseRepository implements Repository {
       .from('avatars')
       .upload(path, blob, { contentType: mimeType, upsert: true });
     if (error) this.fail(error, 'Could not upload that photo.');
-    const { data } = this.client.storage.from('avatars').getPublicUrl(path);
-    return data.publicUrl;
+    return path;
+  }
+
+  /** Delete the caller's stored photo, if any. */
+  async deleteAvatar(userId: string): Promise<void> {
+    const { data, error } = await this.client.storage.from('avatars').list(userId);
+    if (error) this.fail(error, 'Could not read your stored photo.');
+    const keys = (data ?? []).map((entry) => `${userId}/${entry.name}`);
+    if (keys.length === 0) return;
+    const { error: removeError } = await this.client.storage.from('avatars').remove(keys);
+    if (removeError) this.fail(removeError, 'Could not remove your photo.');
+  }
+
+  /**
+   * Sign photo URLs for the given profiles.
+   *
+   * Only members whose photo the caller may read come back with a URL, because
+   * storage evaluates the bucket's SELECT policy before signing. A denied
+   * profile is therefore simply absent from the result, which callers render as
+   * initials rather than as a broken image.
+   */
+  async resolveAvatarUrls(profileIds: string[]): Promise<Record<string, string>> {
+    if (profileIds.length === 0) return {};
+
+    // The path is not part of the public profile payload, so it is read here.
+    // A member can read their own row plus any row their visibility permits.
+    const { data: rows, error } = await this.client
+      .from('profiles')
+      .select('id, avatar_path')
+      .in('id', profileIds);
+    if (error) this.fail(error, 'Could not load profile photos.');
+
+    const paths = (rows ?? []).filter(
+      (row): row is { id: string; avatar_path: string } =>
+        typeof row.avatar_path === 'string' && row.avatar_path.length > 0,
+    );
+    if (paths.length === 0) return {};
+
+    const { data: signed, error: signError } = await this.client.storage
+      .from('avatars')
+      .createSignedUrls(
+        paths.map((row) => row.avatar_path),
+        AVATAR_URL_TTL_SECONDS,
+      );
+    if (signError) this.fail(signError, 'Could not prepare profile photos.');
+
+    // `createSignedUrls` preserves input order, so index back to the profile id.
+    const result: Record<string, string> = {};
+    paths.forEach((row, index) => {
+      const entry = signed?.[index];
+      if (entry?.signedUrl) result[row.id] = entry.signedUrl;
+    });
+    return result;
   }
 
   // ---- matching ---------------------------------------------------------

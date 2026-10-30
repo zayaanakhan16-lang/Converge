@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useAuth } from '../context/AuthContext';
+import { useAvatarUrls, withAvatar } from './useAvatars';
 import { EMPTY_FILTERS, type DiscoverFilters } from '../features/matching/engine';
 import { repository } from '../services';
 import type {
@@ -79,11 +80,19 @@ export function useMatches(filters: DiscoverFilters = EMPTY_FILTERS): AsyncState
   const { user } = useAuth();
   const viewerId = user?.id ?? '';
   const key = JSON.stringify(filters);
-  return useAsync<MatchResult[]>(
+  const state = useAsync<MatchResult[]>(
     () => (viewerId ? repository().getMatches(viewerId, filters) : Promise.resolve([])),
     [],
     [viewerId, key],
   );
+  // Signed photo URLs are resolved after the data arrives, so a denied photo
+  // renders as initials rather than as a broken image.
+  const urls = useAvatarUrls(state.data.map((result) => result.profile.id));
+  const data = useMemo(
+    () => state.data.map((result) => ({ ...result, profile: withAvatar(result.profile, urls) })),
+    [state.data, urls],
+  );
+  return { ...state, data };
 }
 
 export function useCommunities(options?: {
@@ -153,11 +162,17 @@ export function useCommunity(communityId: string | undefined): AsyncState<Commun
 }
 
 export function useCommunityMembers(communityId: string | undefined): AsyncState<Profile[]> {
-  return useAsync<Profile[]>(
+  const state = useAsync<Profile[]>(
     () => (communityId ? repository().getCommunityMembers(communityId) : Promise.resolve([])),
     [],
     [communityId],
   );
+  const urls = useAvatarUrls(state.data.map((profile) => profile.id));
+  const data = useMemo(
+    () => state.data.map((profile) => withAvatar(profile, urls)),
+    [state.data, urls],
+  );
+  return { ...state, data };
 }
 
 export function useCommunityMessages(communityId: string | undefined): AsyncState<Message[]> {
@@ -169,16 +184,30 @@ export function useCommunityMessages(communityId: string | undefined): AsyncStat
 }
 
 export function useProfile(userId: string | undefined): AsyncState<Profile | null> {
-  return useAsync<Profile | null>(
+  const state = useAsync<Profile | null>(
     () => (userId ? repository().getProfile(userId) : Promise.resolve(null)),
     null,
     [userId],
   );
+  const urls = useAvatarUrls(state.data ? [state.data.id] : []);
+  const data = useMemo(
+    () => (state.data ? withAvatar(state.data, urls) : null),
+    [state.data, urls],
+  );
+  return { ...state, data };
 }
 
 export function useProfiles(): AsyncState<Profile[]> {
-  return useAsync<Profile[]>(() => repository().listProfiles(), [], []);
+  const state = useAsync<Profile[]>(() => repository().listProfiles(), [], []);
+  const urls = useAvatarUrls(state.data.map((profile) => profile.id));
+  const data = useMemo(
+    () => state.data.map((profile) => withAvatar(profile, urls)),
+    [state.data, urls],
+  );
+  return { ...state, data };
 }
+
+
 
 export interface ConnectionData {
   incoming: ConnectionRequest[];
@@ -197,9 +226,13 @@ export function useConnections(): AsyncState<ConnectionData> {
     ]);
     return { ...requests, connections };
   }, [viewerId]);
-  return useAsync<ConnectionData>(loader, { incoming: [], outgoing: [], connections: [] }, [
-    viewerId,
-  ]);
+  // Requests and connections carry ids only; screens pair them with
+  // `useProfiles`, which already resolves signed photo URLs.
+  return useAsync<ConnectionData>(
+    loader,
+    { incoming: [], outgoing: [], connections: [] },
+    [viewerId],
+  );
 }
 
 export function useConversations(): AsyncState<Conversation[]> {

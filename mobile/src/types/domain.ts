@@ -1,6 +1,39 @@
 /** Domain model. Mirrors the Supabase schema in `supabase/migrations`. */
 
 export type Visibility = 'community' | 'discoverable' | 'private';
+
+/**
+ * Who may see a member's profile photo.
+ *
+ * Distinct from `Visibility`, which governs whether the profile is discoverable
+ * at all. Every level here is enforced by the storage policy in
+ * `20260101001100_photo_privacy.sql`, so the app only offers options the
+ * database can actually apply.
+ */
+export type PhotoVisibility = 'public' | 'community' | 'connections' | 'private';
+
+export const PHOTO_VISIBILITY_OPTIONS: Array<{
+  id: PhotoVisibility;
+  label: string;
+  hint: string;
+}> = [
+  {
+    id: 'public',
+    label: 'Any signed-in member',
+    hint: 'Anyone with a Converge account who opens your profile.',
+  },
+  {
+    id: 'community',
+    label: 'Members of my communities',
+    hint: 'People who share at least one community with you.',
+  },
+  {
+    id: 'connections',
+    label: 'My connections',
+    hint: 'Only people whose connection request you have accepted.',
+  },
+  { id: 'private', label: 'Only me', hint: 'Nobody else can load your photo.' },
+];
 export type ConnectionState = 'none' | 'pending-outgoing' | 'pending-incoming' | 'connected' | 'blocked';
 export type MessageDeliveryState = 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
 export type CommunityRole = 'member' | 'organiser' | 'owner';
@@ -55,6 +88,8 @@ export interface PrivacySettings {
   allowConnectionRequests: boolean;
   /** Show the member in community member lists. */
   showInCommunityLists: boolean;
+  /** Who may load the profile photo. Enforced by the storage policy. */
+  photoVisibility: PhotoVisibility;
 }
 
 export const DEFAULT_PRIVACY: PrivacySettings = {
@@ -62,6 +97,7 @@ export const DEFAULT_PRIVACY: PrivacySettings = {
   shareApproximateLocation: false,
   allowConnectionRequests: true,
   showInCommunityLists: true,
+  photoVisibility: 'community',
 };
 
 export interface NotificationSettings {
@@ -83,6 +119,14 @@ export const DEFAULT_NOTIFICATIONS: NotificationSettings = {
 export interface Profile {
   id: string;
   displayName: string;
+  /**
+   * A displayable URL for the profile photo, or null.
+   *
+   * Photos live in a private bucket, so this is a short-lived signed URL
+   * obtained from `Repository.resolveAvatarUrl`, never a stored public URL.
+   * Callers that hold a `Profile` from a list therefore hold a URL that expires;
+   * screens that must show a photo for longer re-resolve it.
+   */
   avatarUrl: string | null;
   /** Optional one-line introduction. */
   headline: string | null;

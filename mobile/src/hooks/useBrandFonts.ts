@@ -5,9 +5,9 @@ import { useEffect } from 'react';
 /**
  * Font loading.
  *
- * The brand typefaces are bundled as static instances of the Fraunces and
- * Manrope variable fonts (both SIL Open Font License). They are loaded before
- * the first screen renders so no text ever reflows after paint.
+ * Both typefaces are bundled as static instances cut from the upstream variable
+ * fonts (Plus Jakarta Sans and Inter, both SIL Open Font License). They are
+ * loaded before the first screen renders so no text ever reflows after paint.
  */
 
 void SplashScreen.preventAutoHideAsync().catch(() => {
@@ -16,11 +16,15 @@ void SplashScreen.preventAutoHideAsync().catch(() => {
 
 export function useBrandFonts(): { ready: boolean; error: Error | null } {
   const [loaded, error] = useFonts({
-    'Fraunces-SemiBold': require('../../assets/fonts/Fraunces-SemiBold.ttf'),
-    'Manrope-Regular': require('../../assets/fonts/Manrope-Regular.ttf'),
-    'Manrope-Medium': require('../../assets/fonts/Manrope-Medium.ttf'),
-    'Manrope-SemiBold': require('../../assets/fonts/Manrope-SemiBold.ttf'),
-    'Manrope-Bold': require('../../assets/fonts/Manrope-Bold.ttf'),
+    'Jakarta-Regular': require('../../assets/fonts/PlusJakartaSans-400.ttf'),
+    'Jakarta-Medium': require('../../assets/fonts/PlusJakartaSans-500.ttf'),
+    'Jakarta-SemiBold': require('../../assets/fonts/PlusJakartaSans-600.ttf'),
+    'Jakarta-Bold': require('../../assets/fonts/PlusJakartaSans-700.ttf'),
+    'Jakarta-ExtraBold': require('../../assets/fonts/PlusJakartaSans-800.ttf'),
+    'Inter-Regular': require('../../assets/fonts/Inter-400.ttf'),
+    'Inter-Medium': require('../../assets/fonts/Inter-500.ttf'),
+    'Inter-SemiBold': require('../../assets/fonts/Inter-600.ttf'),
+    'Inter-Bold': require('../../assets/fonts/Inter-700.ttf'),
   });
 
   useEffect(() => {

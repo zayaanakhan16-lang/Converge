@@ -83,7 +83,7 @@ export function BrandScreen({ navigation }: Props) {
         <Card>
           <SectionHeader
             title="Typography"
-            subtitle="Fraunces for display and screen titles, Manrope for everything else."
+            subtitle="Plus Jakarta Sans for display and titles, Inter for body and message text."
           />
           {(
             [
