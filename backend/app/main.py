@@ -13,7 +13,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .api import coach, health, language, matching, moderation
+from .api import coach, health, language, matching, moderation, places
 from .core.config import get_settings
 from .core.errors import register_exception_handlers
 
@@ -26,7 +26,7 @@ app = FastAPI(
     version=settings.version,
     description=(
         "Converge backend intelligence services: AuraMatch scoring, language "
-        "translation, conversation coaching and moderation intake."
+        "translation, place search, conversation coaching and moderation intake."
     ),
     docs_url="/docs",
     openapi_url="/openapi.json",
@@ -48,6 +48,7 @@ app.include_router(matching.router, prefix="/api/v1")
 app.include_router(language.router, prefix="/api/v1")
 app.include_router(coach.router, prefix="/api/v1")
 app.include_router(moderation.router, prefix="/api/v1")
+app.include_router(places.router, prefix="/api/v1")
 
 
 @app.get("/", include_in_schema=False)

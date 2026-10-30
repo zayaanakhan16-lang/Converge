@@ -45,6 +45,15 @@ class Settings(BaseSettings):
     coach_api_key: str = Field(default="", alias="COACH_API_KEY")
     coach_api_url: str = Field(default="", alias="COACH_API_URL")
 
+    # ---- Geocoding ----------------------------------------------------------
+    # Nominatim needs no key, so a fresh clone can search places as soon as the
+    # backend runs. mapbox and locationiq additionally need GEOCODING_API_KEY.
+    geocoding_provider: str = Field(default="nominatim", alias="GEOCODING_PROVIDER")
+    geocoding_api_key: str = Field(default="", alias="GEOCODING_API_KEY")
+    geocoding_api_url: str = Field(default="", alias="GEOCODING_API_URL")
+    geocoding_user_agent: str = Field(default="", alias="GEOCODING_USER_AGENT")
+    geocoding_timeout_seconds: float = Field(default=8.0, alias="GEOCODING_TIMEOUT_SECONDS")
+
     # ---- Transcription ------------------------------------------------------
     transcription_provider: str = Field(default="", alias="TRANSCRIPTION_PROVIDER")
     transcription_api_key: str = Field(default="", alias="TRANSCRIPTION_API_KEY")
@@ -61,6 +70,16 @@ class Settings(BaseSettings):
     @property
     def coach_model_enabled(self) -> bool:
         return bool(self.coach_model and self.coach_api_key and self.coach_api_url)
+
+    @property
+    def geocoding_enabled(self) -> bool:
+        provider = self.geocoding_provider.strip().lower()
+        if provider in ("", "none", "disabled"):
+            return False
+        if provider == "nominatim":
+            # Nominatim is keyless: the provider name is the whole requirement.
+            return True
+        return bool(self.geocoding_api_key)
 
     @property
     def transcription_enabled(self) -> bool:
@@ -80,6 +99,7 @@ class Settings(BaseSettings):
             "coach_model": self.coach_model_enabled,
             "coach_rules": True,
             "transcription": self.transcription_enabled,
+            "geocoding": self.geocoding_enabled,
             "matching": True,
             "supabase": self.supabase_enabled,
         }

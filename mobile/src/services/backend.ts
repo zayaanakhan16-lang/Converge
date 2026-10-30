@@ -83,7 +83,79 @@ export interface TranscriptionResult {
   confidence: number | null;
 }
 
+/** One place returned by the Converge geocoding endpoint. */
+export interface PlaceResult {
+  label: string;
+  name: string;
+  kind: 'country' | 'region' | 'city' | 'neighbourhood' | 'other';
+  latitude: number;
+  longitude: number;
+  city?: string | null;
+  region?: string | null;
+  country?: string | null;
+  countryCode?: string | null;
+}
+
+/** Whether the backend has a usable geocoder, and which one. */
+export interface PlaceProviderInfo {
+  enabled: boolean;
+  provider: string | null;
+  kinds: string[];
+}
+
 export const backend = {
+  /**
+   * Search for a place by name.
+   *
+   * The geocoder runs on the backend rather than the device. Two reasons: the
+   * provider key stays server-side where it cannot be extracted from the app
+   * bundle, and the request is rate limited centrally so one client cannot
+   * exhaust a shared quota.
+   *
+   * An empty array means the provider answered and recognised nothing. A
+   * provider that could not be reached throws, so the caller never mistakes a
+   * failure for "no such place".
+   */
+  async searchPlaces(input: {
+    query: string;
+    limit?: number;
+    kind?: PlaceResult['kind'];
+  }): Promise<PlaceResult[]> {
+    const params = new URLSearchParams({ q: input.query });
+    if (input.limit) params.set('limit', String(input.limit));
+    if (input.kind) params.set('kind', input.kind);
+    const data = await request<{
+      query: string;
+      provider: string;
+      results: Array<{
+        label: string;
+        name: string;
+        kind: PlaceResult['kind'];
+        latitude: number;
+        longitude: number;
+        city: string | null;
+        region: string | null;
+        country: string | null;
+        country_code: string | null;
+      }>;
+    }>(`/api/v1/places/search?${params.toString()}`);
+    return data.results.map((place) => ({
+      label: place.label,
+      name: place.name,
+      kind: place.kind,
+      latitude: place.latitude,
+      longitude: place.longitude,
+      city: place.city,
+      region: place.region,
+      country: place.country,
+      countryCode: place.country_code,
+    }));
+  },
+
+  async placeProvider(): Promise<PlaceProviderInfo> {
+    return request<PlaceProviderInfo>('/api/v1/places/providers');
+  },
+
   async health(): Promise<{ status: string; version: string; features: string[] }> {
     return request('/health');
   },

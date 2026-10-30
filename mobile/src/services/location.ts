@@ -1,5 +1,6 @@
 import * as Location from 'expo-location';
 
+import { BackendUnavailableError, backend } from './backend';
 import type { ApproximateLocation } from '../types/domain';
 import { snapToGrid } from '../utils/geo';
 
@@ -152,80 +153,73 @@ export async function readDeviceArea(): Promise<LocationOutcome> {
 }
 
 export interface PlaceSearchResult {
-  /** Display label, e.g. "Bristol, United Kingdom". */
+  /** Display label, e.g. "Manchester, England, United Kingdom". */
   label: string;
+  /** The place name on its own, e.g. "Manchester". */
+  name: string;
+  /** How specific the place is, so the interface can describe it. */
+  kind: 'country' | 'region' | 'city' | 'neighbourhood' | 'other';
   latitude: number;
   longitude: number;
-  city?: string;
-  countryCode?: string;
+  city?: string | null;
+  country?: string | null;
+  countryCode?: string | null;
 }
 
 /**
  * Outcome of a place lookup.
  *
- * `unavailable` is a distinct state from `ok` with no results, because the two
- * need different words in the interface. A platform with no geocoder will never
- * return a match, so telling the member "no places matched" would be untrue.
+ * `unavailable` is deliberately distinct from an empty result list. A platform
+ * or deployment with no geocoder will never return a match, so telling the
+ * member "nothing matched" would be untrue; the reason is carried instead so
+ * the screen can say what is actually wrong.
  */
 export type PlaceSearchOutcome =
   | { status: 'ok'; results: PlaceSearchResult[] }
   | { status: 'unavailable'; message: string };
 
 /**
- * Search for a place by name, for manual location selection and global
- * discovery.
+ * Search for a place by name.
  *
- * Uses the platform geocoder, which resolves a place name to coordinates and
- * coordinates to place names using the provider the operating system supplies.
- * On Android that is the device's geocoding service; no third-party key is
- * involved, which is why this works without configuration.
+ * The lookup runs on the Converge backend, not on the device. Keeping it there
+ * means a provider key is never shipped inside the app bundle, the provider's
+ * rate limit is enforced in one place, and repeated typing is absorbed by a
+ * server-side cache rather than hitting the provider each keystroke.
  *
- * The coordinates returned here are the *place's* centre, not the member's
- * position. They are snapped by the caller before being stored, exactly like a
- * device reading.
+ * This is a separate concern from `readDeviceArea`. That function answers "where
+ * is this device, coarsely"; this one answers "where is this named place". A
+ * member can use this one without ever granting location permission.
  */
-export async function searchPlaces(query: string): Promise<PlaceSearchOutcome> {
+export async function searchPlaces(
+  query: string,
+  options: { limit?: number; kind?: PlaceSearchResult['kind'] } = {},
+): Promise<PlaceSearchOutcome> {
   const trimmed = query.trim();
   if (trimmed.length < 2) return { status: 'ok', results: [] };
 
-  let matches: Location.LocationGeocodedLocation[] = [];
   try {
-    matches = await Location.geocodeAsync(trimmed);
-  } catch {
-    // The platform has no forward geocoder. This is the case on web and on
-    // Android devices without the Google location provider, and it is a
-    // capability gap rather than a failure, so it is reported as one.
+    const results = await backend.searchPlaces({
+      query: trimmed,
+      limit: options.limit,
+      kind: options.kind,
+    });
+    return { status: 'ok', results };
+  } catch (error) {
+    if (error instanceof BackendUnavailableError) {
+      return {
+        status: 'unavailable',
+        message:
+          'Place search needs the Converge backend. Set EXPO_PUBLIC_BACKEND_URL, then try again.',
+      };
+    }
+    // A provider failure is reported rather than shown as "no matches", so a
+    // member is never told a place does not exist when the lookup simply failed.
     return {
       status: 'unavailable',
-      message: 'Place search is not available on this device.',
+      message:
+        error instanceof Error && error.message
+          ? error.message
+          : 'That place could not be looked up. Check your connection and try again.',
     };
   }
-
-  const limited = matches.slice(0, 6);
-
-  // Geocoding returns coordinates only, so each match is reverse geocoded to
-  // obtain a readable label. These run together rather than in sequence.
-  const described = await Promise.all(
-    limited.map(async (match) => {
-      const place = await describePlace({
-        latitude: match.latitude,
-        longitude: match.longitude,
-      });
-      return { match, place };
-    }),
-  );
-
-  return {
-    status: 'ok',
-    results: described.map(({ match, place }) => {
-      const parts = [place.city, place.countryCode].filter(Boolean);
-      return {
-        label: parts.length > 0 ? parts.join(', ') : trimmed,
-        latitude: match.latitude,
-        longitude: match.longitude,
-        city: place.city,
-        countryCode: place.countryCode,
-      };
-    }),
-  };
 }

@@ -72,6 +72,36 @@ class TranscribeResponse(BaseModel):
     confidence: float | None
 
 
+PlaceKind = Literal["country", "region", "city", "neighbourhood", "other"]
+
+
+class PlaceModel(BaseModel):
+    """One resolved place. The coordinate is the place's published centre."""
+
+    label: str
+    name: str
+    kind: PlaceKind
+    latitude: float
+    longitude: float
+    city: str | None = None
+    region: str | None = None
+    country: str | None = None
+    country_code: str | None = None
+
+
+class PlaceSearchResponse(BaseModel):
+    """Results of a place search.
+
+    An empty `results` list means the provider answered and recognised nothing.
+    A provider that could not be reached is reported as an error instead, so an
+    empty list is never ambiguous.
+    """
+
+    query: str
+    provider: str
+    results: list[PlaceModel]
+
+
 class ReportRequest(_Stripped):
     subject_user_id: str | None = Field(default=None, max_length=64)
     subject_message_id: str | None = Field(default=None, max_length=64)

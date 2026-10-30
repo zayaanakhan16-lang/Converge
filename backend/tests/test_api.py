@@ -1,5 +1,7 @@
 """API surface tests, including the paths where a feature is not configured."""
 
+import pytest
+
 from app.services.coach import SCENARIOS
 
 
@@ -15,6 +17,8 @@ def test_health_reports_capabilities(client):
     assert features["translation"] is False
     assert features["coach_model"] is False
     assert features["transcription"] is False
+    # Nominatim needs no key, so place search is available on a fresh clone.
+    assert features["geocoding"] is True
 
 
 def test_match_endpoint_ranks_and_explains(client):
@@ -143,3 +147,88 @@ def test_root_describes_the_service(client):
     response = client.get("/")
     assert response.status_code == 200
     assert response.json()["service"]
+
+
+def test_place_search_rejects_a_too_short_query(client):
+    response = client.get("/api/v1/places/search", params={"q": "x"})
+    assert response.status_code == 422
+
+
+def test_place_search_rejects_an_unknown_kind(client):
+    response = client.get("/api/v1/places/search", params={"q": "Manchester", "kind": "street"})
+    assert response.status_code == 422
+
+
+def test_place_providers_reports_configuration_without_secrets(client):
+    response = client.get("/api/v1/places/providers")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["enabled"] is True
+    assert body["provider"] == "nominatim"
+    assert "api_key" not in body
+    assert set(body["kinds"]) == {"country", "region", "city", "neighbourhood", "other"}
+
+
+def test_place_search_returns_real_results(client, monkeypatch):
+    """The endpoint is exercised against a real provider payload.
+
+    Only the transport is stubbed: routing, validation, parsing and
+    serialisation all run as they do in production.
+    """
+    import httpx
+
+    from app.services import geocoding
+
+    geocoding.clear_cache()
+    body = [
+        {
+            "lat": "6.4550575",
+            "lon": "3.3941795",
+            "name": "Lagos",
+            "display_name": "Lagos, Nigeria",
+            "addresstype": "city",
+            "address": {
+                "city": "Lagos",
+                "state": "Lagos",
+                "country": "Nigeria",
+                "country_code": "ng",
+            },
+        }
+    ]
+    transport = httpx.MockTransport(lambda _: httpx.Response(200, json=body))
+    original = httpx.AsyncClient
+    monkeypatch.setattr(
+        geocoding.httpx,
+        "AsyncClient",
+        lambda *a, **k: original(*a, transport=transport, **k),
+    )
+
+    response = client.get("/api/v1/places/search", params={"q": "Lagos", "limit": 3})
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["provider"] == "nominatim"
+    assert len(payload["results"]) == 1
+    place = payload["results"][0]
+    assert place["name"] == "Lagos"
+    assert place["kind"] == "city"
+    assert place["country_code"] == "NG"
+    assert place["latitude"] == pytest.approx(6.4550575)
+
+
+def test_place_search_reports_a_provider_failure_as_503(client, monkeypatch):
+    import httpx
+
+    from app.services import geocoding
+
+    geocoding.clear_cache()
+    transport = httpx.MockTransport(lambda _: httpx.Response(500, text="upstream down"))
+    original = httpx.AsyncClient
+    monkeypatch.setattr(
+        geocoding.httpx,
+        "AsyncClient",
+        lambda *a, **k: original(*a, transport=transport, **k),
+    )
+
+    response = client.get("/api/v1/places/search", params={"q": "Manchester"})
+    assert response.status_code == 503
+    assert response.json()["error"]["code"] == "provider-unavailable"
