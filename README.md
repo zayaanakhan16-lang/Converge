@@ -128,8 +128,8 @@ reason they were rejected are in `docs/design/design-system.md`.
 
 The palette is deep teal on warm neutral. `brand/guidelines/colour-tokens.json`
 holds the machine-readable tokens; every pair in use was checked against WCAG AA
-in both themes. Fraunces carries the display sizes and Manrope carries everything
-read at length.
+in both themes. Plus Jakarta Sans carries the display sizes and Inter carries
+everything read at length.
 
 Deliverables: primary and secondary logos, the app icon in all Android densities,
 light and dark themes, the typography system, colour tokens, brand guidelines, and

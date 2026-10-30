@@ -10,7 +10,8 @@ Single source of truth for the Converge visual identity. Emits:
 
 Run from the repository root:  python3 brand/tools/generate_brand.py
 Requires cairosvg (PNG export) and fonttools (wordmark outlines). Static font
-instances are expected in /tmp/fonts - see docs/design/brand.md.
+instances are expected in /tmp/fonts; the bundled families are recorded in
+ docs/design/design-system.md.
 """
 from __future__ import annotations
 
@@ -682,7 +683,7 @@ def build_typography_specimen(display: Wordmark, body: Wordmark, heading: Wordma
     b1, _ = body.path("Converge connects people through shared interests", 17, 116, 276, 0.1)
     b2, _ = body.path("and community participation, not follower counts.", 17, 116, 302, 0.1)
     l1, _ = label.path("START A CONVERSATION", 13, 116, 352, 2.6)
-    meta, _ = body.path("Manrope 400 / 500 / 600 / 700  -  Fraunces 600 for display", 12, 116, 384, 0.2)
+    meta, _ = body.path("Inter 400 / 500 / 600 / 700  -  Plus Jakarta Sans for display", 12, 116, 384, 0.2)
     body_svg = (
         f'<path d="{d1}" fill="{BRAND_STATIC["midnight"]}"/>'
         f'<path d="{d2}" fill="{BRAND_STATIC["midnight"]}"/>'
@@ -705,11 +706,15 @@ def copy_fonts() -> None:
     os.makedirs(target, exist_ok=True)
     os.makedirs(brand_fonts, exist_ok=True)
     mapping = {
-        "Manrope_400.ttf": "Manrope-Regular.ttf",
-        "Manrope_500.ttf": "Manrope-Medium.ttf",
-        "Manrope_600.ttf": "Manrope-SemiBold.ttf",
-        "Manrope_700.ttf": "Manrope-Bold.ttf",
-        "Fraunces_600.ttf": "Fraunces-SemiBold.ttf",
+        "PlusJakartaSans_400.ttf": "PlusJakartaSans-400.ttf",
+        "PlusJakartaSans_500.ttf": "PlusJakartaSans-500.ttf",
+        "PlusJakartaSans_600.ttf": "PlusJakartaSans-600.ttf",
+        "PlusJakartaSans_700.ttf": "PlusJakartaSans-700.ttf",
+        "PlusJakartaSans_800.ttf": "PlusJakartaSans-800.ttf",
+        "Inter_400.ttf": "Inter-400.ttf",
+        "Inter_500.ttf": "Inter-500.ttf",
+        "Inter_600.ttf": "Inter-600.ttf",
+        "Inter_700.ttf": "Inter-700.ttf",
     }
     for src, dest in mapping.items():
         source = os.path.join(FONT_DIR, src)
@@ -725,21 +730,21 @@ def copy_fonts() -> None:
 
 def main() -> None:
     required = {
-        "Fraunces_600.ttf": None,
-        "Manrope_400.ttf": None,
-        "Manrope_600.ttf": None,
-        "Manrope_700.ttf": None,
+        "PlusJakartaSans_800.ttf": None,
+        "Inter_400.ttf": None,
+        "Inter_500.ttf": None,
+        "Inter_600.ttf": None,
     }
     for name in required:
         if not os.path.exists(os.path.join(FONT_DIR, name)):
             raise SystemExit(
                 f"{name} missing in {FONT_DIR}; build static instances first "
-                "(see docs/design/brand.md)"
+                "(see docs/design/design-system.md)"
             )
-    display = Wordmark(os.path.join(FONT_DIR, "Fraunces_600.ttf"))
-    body = Wordmark(os.path.join(FONT_DIR, "Manrope_400.ttf"))
-    heading = Wordmark(os.path.join(FONT_DIR, "Manrope_700.ttf"))
-    label = Wordmark(os.path.join(FONT_DIR, "Manrope_600.ttf"))
+    display = Wordmark(os.path.join(FONT_DIR, "PlusJakartaSans_800.ttf"))
+    body = Wordmark(os.path.join(FONT_DIR, "Inter_400.ttf"))
+    heading = Wordmark(os.path.join(FONT_DIR, "PlusJakartaSans_700.ttf"))
+    label = Wordmark(os.path.join(FONT_DIR, "Inter_600.ttf"))
 
     build_logo_explorations()
     build_primary_logos(display, body)

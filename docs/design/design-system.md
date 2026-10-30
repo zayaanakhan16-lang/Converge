@@ -55,25 +55,34 @@ primary would be too heavy on a dark surface.
 ## Typography
 
 Two families, both with full Android support and no missing glyphs for the
-supported languages:
+supported languages. Both are bundled with the app, so no screen depends on a
+font the device may not have:
 
-- **Fraunces** (display, headings) — a serif with real personality at large sizes.
-  Used only for the wordmark and screen titles, never for body copy: it is warm
-  rather than neutral, which is the brand but tiring to read in volume.
-- **Manrope** (body, buttons, labels, data) — a geometric sans with an even
-  rhythm at small sizes and open counters, which matters for the many short
-  labels in this product.
+- **Plus Jakarta Sans** (display, titles) — geometric with a slightly humanist
+  warmth, and distinctive at large sizes without becoming decorative. Used for
+  the wordmark and screen titles, never for body copy: it is warm rather than
+  neutral, which is the brand but tiring to read in volume.
+- **Inter** (body, buttons, labels, data) — a large x-height and open apertures
+  hold up at 13-15px on a low-density phone screen, which matters for the many
+  short labels in this product. Its figures are tabular by default, so timestamps
+  and counts line up without extra work.
 
-| Role | Family | Size / weight | Line height |
+| Token | Family | Size / weight | Line height |
 | --- | --- | --- | --- |
-| Display | Fraunces SemiBold | 32 / 600 | 38 |
-| Heading | Fraunces SemiBold | 24 / 600 | 30 |
-| Title | Manrope SemiBold | 18 / 600 | 24 |
-| Body | Manrope Regular | 16 / 400 | 24 |
-| Body strong | Manrope Medium | 16 / 500 | 24 |
-| Caption | Manrope Regular | 13 / 400 | 18 |
-| Button | Manrope SemiBold | 15 / 600 | 20 |
-| Label | Manrope Medium | 13 / 500 | 18 |
+| `display` | Plus Jakarta Sans ExtraBold | 33 / 800 | 38 |
+| `title1` | Plus Jakarta Sans Bold | 27 / 700 | 32 |
+| `title2` | Plus Jakarta Sans Bold | 21 / 700 | 26 |
+| `title3` | Plus Jakarta Sans SemiBold | 17 / 600 | 23 |
+| `body` | Inter Regular | 15.5 / 400 | 22 |
+| `bodyStrong` | Inter SemiBold | 15.5 / 600 | 22 |
+| `caption` | Inter Medium | 13 / 500 | 18 |
+| `label` | Plus Jakarta Sans Bold | 11.5 / 700 | 16 (uppercase) |
+| `button` | Plus Jakarta Sans SemiBold | 15 / 600 | 20 |
+| `mono` | Inter Medium | 13 / 500 | 18 (tabular) |
+
+Display and title sizes carry slight negative tracking; `label` carries positive
+tracking because it is uppercase. The token names above are the ones exported
+from `mobile/src/theme/`.
 
 Fonts are loaded once by `mobile/src/hooks/useBrandFonts.ts` and referenced by
 token from `mobile/src/theme/`, so a screen never names a font file. The specimen is in
