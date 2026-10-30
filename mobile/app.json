@@ -1,0 +1,110 @@
+{
+  "expo": {
+    "name": "Converge",
+    "slug": "converge",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "converge",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "primaryColor": "#0E3A4C",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0B1420"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "android": {
+      "package": "app.converge.mobile",
+      "versionCode": 1,
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": true,
+      "adaptiveIcon": {
+        "backgroundColor": "#0B1420",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE"
+      ],
+      "blockedPermissions": [
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
+      "softwareKeyboardLayoutMode": "resize"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.converge.mobile",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Converge uses the camera to scan community and event QR codes.",
+        "NSMicrophoneUsageDescription": "Converge uses the microphone for voice notes and conversation practice.",
+        "NSLocationWhenInUseUsageDescription": "Converge uses your approximate area to suggest nearby communities. Exact coordinates are never stored or shared.",
+        "NSPhotoLibraryUsageDescription": "Converge lets you choose a profile photo and share images in conversations."
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-font",
+      "expo-secure-store",
+      "expo-localization",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Converge lets you choose a profile photo and share images in conversations.",
+          "cameraPermission": "Converge uses the camera to scan community and event QR codes."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Converge uses the camera to scan community and event QR codes.",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Converge uses your approximate area to suggest nearby communities and events. Exact coordinates are never stored or shared.",
+          "isAndroidBackgroundLocationEnabled": false,
+          "isAndroidForegroundServiceEnabled": false
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Converge uses the microphone for voice notes and conversation practice."
+        }
+      ],
+      "@maplibre/maplibre-react-native",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0B1420",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain"
+        }
+      ],
+      "./plugins/withConvergeAudio"
+    ],
+    "extra": {
+      "brand": {
+        "primary": "#0E3A4C",
+        "accent": "#0F7C8C",
+        "background": "#F7F4EF",
+        "darkBackground": "#0B1420"
+      }
+    }
+  }
+}

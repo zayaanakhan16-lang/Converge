@@ -1,0 +1,313 @@
+{
+  "brand": {
+    "midnight": "#0B1420",
+    "midnightDeep": "#060D15",
+    "tealDeep": "#0E3A4C",
+    "tealSignal": "#1FB8A6",
+    "tealSignalSoft": "#7FD9CE",
+    "ivory": "#F7F4EF",
+    "ivoryBright": "#FFFDF9",
+    "clay": "#C2703F",
+    "slate": "#525C69"
+  },
+  "themes": {
+    "light": {
+      "background": "#F7F4EF",
+      "surface": "#FFFFFF",
+      "surfaceSunken": "#EFEAE2",
+      "surfaceInverse": "#0B1420",
+      "primary": "#0E3A4C",
+      "primaryPressed": "#092A38",
+      "secondary": "#14395E",
+      "accent": "#0F7C8C",
+      "accentSoft": "#DCEAEC",
+      "textPrimary": "#0B1420",
+      "textSecondary": "#525C69",
+      "textMuted": "#5F6875",
+      "onPrimary": "#FFFFFF",
+      "onAccent": "#FFFFFF",
+      "border": "#E2DCD2",
+      "borderStrong": "#C9C1B4",
+      "success": "#1E7F5C",
+      "warning": "#8A5A0B",
+      "error": "#B3261E",
+      "info": "#1F5FA8"
+    },
+    "dark": {
+      "background": "#0B1420",
+      "surface": "#121E2C",
+      "surfaceSunken": "#0E1723",
+      "surfaceInverse": "#F7F4EF",
+      "primary": "#7FD9CE",
+      "primaryPressed": "#A6E6DE",
+      "secondary": "#9CC3EE",
+      "accent": "#57C8D8",
+      "accentSoft": "#16303A",
+      "textPrimary": "#F2F5F8",
+      "textSecondary": "#A9B6C4",
+      "textMuted": "#8B97A4",
+      "onPrimary": "#06222B",
+      "onAccent": "#04202A",
+      "border": "#24344A",
+      "borderStrong": "#35485F",
+      "success": "#4ECB8F",
+      "warning": "#E3A857",
+      "error": "#F2837C",
+      "info": "#7FB2F0"
+    }
+  },
+  "contrast": [
+    {
+      "theme": "light",
+      "foreground": "background",
+      "background": "textPrimary",
+      "ratio": 16.86,
+      "target": 4.5,
+      "level": "AA body",
+      "passes": true
+    },
+    {
+      "theme": "light",
+      "foreground": "background",
+      "background": "textSecondary",
+      "ratio": 6.19,
+      "target": 4.5,
+      "level": "AA body",
+      "passes": true
+    },
+    {
+      "theme": "light",
+      "foreground": "background",
+      "background": "textMuted",
+      "ratio": 5.14,
+      "target": 4.5,
+      "level": "AA body",
+      "passes": true
+    },
+    {
+      "theme": "light",
+      "foreground": "surface",
+      "background": "textPrimary",
+      "ratio": 18.5,
+      "target": 4.5,
+      "level": "AA body",
+      "passes": true
+    },
+    {
+      "theme": "light",
+      "foreground": "surface",
+      "background": "textSecondary",
+      "ratio": 6.79,
+      "target": 4.5,
+      "level": "AA body",
+      "passes": true
+    },
+    {
+      "theme": "light",
+      "foreground": "surfaceSunken",
+      "background": "textSecondary",
+      "ratio": 5.67,
+      "target": 4.5,
+      "level": "AA body",
+      "passes": true
+    },
+    {
+      "theme": "light",
+      "foreground": "surfaceSunken",
+      "background": "textMuted",
+      "ratio": 4.71,
+      "target": 4.5,
+      "level": "AA body",
+      "passes": true
+    },
+    {
+      "theme": "light",
+      "foreground": "primary",
+      "background": "onPrimary",
+      "ratio": 12.15,
+      "target": 4.5,
+      "level": "AA body",
+      "passes": true
+    },
+    {
+      "theme": "light",
+      "foreground": "accent",
+      "background": "onAccent",
+      "ratio": 4.9,
+      "target": 4.5,
+      "level": "AA body",
+      "passes": true
+    },
+    {
+      "theme": "light",
+      "foreground": "background",
+      "background": "primary",
+      "ratio": 11.08,
+      "target": 3.0,
+      "level": "AA large / UI",
+      "passes": true
+    },
+    {
+      "theme": "light",
+      "foreground": "background",
+      "background": "accent",
+      "ratio": 4.47,
+      "target": 3.0,
+      "level": "AA large / UI",
+      "passes": true
+    },
+    {
+      "theme": "light",
+      "foreground": "background",
+      "background": "success",
+      "ratio": 4.51,
+      "target": 3.0,
+      "level": "AA large / UI",
+      "passes": true
+    },
+    {
+      "theme": "light",
+      "foreground": "background",
+      "background": "warning",
+      "ratio": 5.4,
+      "target": 3.0,
+      "level": "AA large / UI",
+      "passes": true
+    },
+    {
+      "theme": "light",
+      "foreground": "background",
+      "background": "error",
+      "ratio": 5.96,
+      "target": 3.0,
+      "level": "AA large / UI",
+      "passes": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "background",
+      "background": "textPrimary",
+      "ratio": 16.91,
+      "target": 4.5,
+      "level": "AA body",
+      "passes": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "background",
+      "background": "textSecondary",
+      "ratio": 8.96,
+      "target": 4.5,
+      "level": "AA body",
+      "passes": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "background",
+      "background": "textMuted",
+      "ratio": 6.22,
+      "target": 4.5,
+      "level": "AA body",
+      "passes": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "surface",
+      "background": "textPrimary",
+      "ratio": 15.38,
+      "target": 4.5,
+      "level": "AA body",
+      "passes": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "surface",
+      "background": "textSecondary",
+      "ratio": 8.15,
+      "target": 4.5,
+      "level": "AA body",
+      "passes": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "surfaceSunken",
+      "background": "textSecondary",
+      "ratio": 8.73,
+      "target": 4.5,
+      "level": "AA body",
+      "passes": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "surfaceSunken",
+      "background": "textMuted",
+      "ratio": 6.06,
+      "target": 4.5,
+      "level": "AA body",
+      "passes": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "primary",
+      "background": "onPrimary",
+      "ratio": 10.0,
+      "target": 4.5,
+      "level": "AA body",
+      "passes": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "accent",
+      "background": "onAccent",
+      "ratio": 8.56,
+      "target": 4.5,
+      "level": "AA body",
+      "passes": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "background",
+      "background": "primary",
+      "ratio": 11.2,
+      "target": 3.0,
+      "level": "AA large / UI",
+      "passes": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "background",
+      "background": "accent",
+      "ratio": 9.39,
+      "target": 3.0,
+      "level": "AA large / UI",
+      "passes": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "background",
+      "background": "success",
+      "ratio": 9.04,
+      "target": 3.0,
+      "level": "AA large / UI",
+      "passes": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "background",
+      "background": "warning",
+      "ratio": 8.81,
+      "target": 3.0,
+      "level": "AA large / UI",
+      "passes": true
+    },
+    {
+      "theme": "dark",
+      "foreground": "background",
+      "background": "error",
+      "ratio": 7.32,
+      "target": 3.0,
+      "level": "AA large / UI",
+      "passes": true
+    }
+  ]
+}

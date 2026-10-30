@@ -1,0 +1,62 @@
+# ---- Node / Expo ----
+node_modules/
+.expo/
+.expo-shared/
+dist/
+web-build/
+*.tsbuildinfo
+npm-debug.log*
+yarn-error.log*
+.npm/
+
+# ---- Native build output (Expo generates these; never hand-edit) ----
+mobile/android/
+mobile/ios/
+*.jks
+*.keystore
+*.p8
+*.p12
+*.mobileprovision
+*.aab
+*.apk
+android-native/build/
+android-native/.cxx/
+android-native/**/build/
+# Host-test binaries produced by android-native/cpp/run_tests.sh
+android-native/cpp/waveform_test_bin
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.coverage
+htmlcov/
+
+# ---- Secrets: never commit ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+service-account*.json
+
+# ---- Supabase local state ----
+supabase/.temp/
+supabase/.branches/
+
+# ---- Editors / OS ----
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# ---- Agent scratch ----
+.agent_tmp/
