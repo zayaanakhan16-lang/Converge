@@ -42,6 +42,7 @@ a live deployment.
 | Authentication | Signup, login, logout, password recovery, password visibility, validation, session persistence. Real Supabase Auth when configured; demo sign-in otherwise. |
 | Onboarding | Multi-step, every optional field skippable: display name, avatar, interests, skills, languages, goals, preferred activities, short introduction. |
 | Discover | Member, community, club and event discovery with filters for interests, languages, activities and goals. |
+| Place search | Nearby discovery around a device area or any place in the world, resolved by a real geocoder on the backend. Nothing finer than a city is ever stored. |
 | AuraMatch | A signal model over shared interests, complementary skills, aligned goals, language compatibility, activity preferences, shared membership and optional proximity. Every suggestion carries its reasons as text. There is no unexplained percentage. |
 | Communities | Browsing, profiles, membership requests, events, QR join codes, and group discussions. |
 | Connections | Requests with an optional reason, accept, decline, cancel, remove, block, report. Direct messaging is opened only by mutual acceptance. |
@@ -67,6 +68,10 @@ These degrade visibly rather than silently, which is why they are called out her
   note is still sent and shown with its duration, and the reason is stated. A
   flat line is never drawn to fill the gap. Details in
   `docs/setup/native-modules.md`.
+- **Place search** runs on the backend through `GEOCODING_PROVIDER`. Nominatim
+  needs no key and is the default; Mapbox and LocationIQ are also wired. When no
+  provider is reachable the picker says the lookup failed rather than reporting
+  that the place does not exist. See `docs/setup/getting-started.md`.
 - **Maps** use MapLibre with OpenStreetMap data. Location is approximate: a point
   is snapped to a ~5 km grid by a database check constraint, sharing is opt-in,
   and an exact coordinate cannot be stored. See
@@ -168,7 +173,7 @@ cd android-native/cpp  && ./run_tests.sh
 DATABASE_URL=postgres://... ./scripts/run_sql_tests.sh
 ```
 
-Six mobile suites, 35 backend tests, two native host suites and two SQL suites.
+Seven mobile suites, 62 backend tests, two native host suites and three SQL suites.
 What each one covers, and the pitfalls in running them, is in
 `docs/setup/running-tests.md`.
 

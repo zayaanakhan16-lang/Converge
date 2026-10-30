@@ -87,7 +87,7 @@ uvicorn app.main:app --reload --port 8000
 Check it is up:
 
 ```bash
-curl localhost:8000/v1/health
+curl localhost:8000/health
 ```
 
 The response lists which capabilities are configured. Then point the app at it by
@@ -99,6 +99,24 @@ To turn on translation and the model-backed coach, set `TRANSLATION_*` and
 `COACH_*` in `backend/.env` (see `.env.example`). Leaving them blank keeps the
 deterministic rule-based coach, which produces real feedback from the submitted
 text with no model.
+
+### Place search
+
+Nearby discovery resolves place names on the backend, not on the device, so the
+same lookup works on Android and web and the provider can be swapped without an
+app release. `GEOCODING_PROVIDER` selects it:
+
+- `nominatim` (default) needs no key. Its usage policy requires an identifying
+  `GEOCODING_USER_AGENT`, which the service always sends, and at most one request
+  per second, which the service enforces with a process-wide throttle.
+- `mapbox` and `locationiq` need `GEOCODING_API_KEY` and suit higher volume.
+
+The service never requests street addresses or premises, so a result is a
+country, region, city or neighbourhood. That is deliberate: Converge stores an
+approximate area and cannot store anything finer, and a geocoder that returned a
+street would imply a precision the product does not keep. If the provider cannot
+be reached the picker says the lookup failed; it never reports that a place does
+not exist when the real problem was the network.
 
 ## 4. Database tests
 
