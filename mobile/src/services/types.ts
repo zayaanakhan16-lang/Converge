@@ -110,6 +110,31 @@ export interface CreateEventInput {
   capacity: number | null;
 }
 
+/** A member returned by a nearby search, with a rounded distance. */
+export interface NearbyPerson {
+  profile: Profile;
+  /** Whole kilometres, measured from a coarse grid. Never more precise. */
+  distanceKm: number;
+}
+
+/** A community returned by a nearby search. */
+export interface NearbyCommunity {
+  community: Community;
+  distanceKm: number;
+}
+
+/** Where to search from, and how far. */
+export interface NearbyQuery {
+  center: { latitude: number; longitude: number } | null;
+  radiusKm: number;
+}
+
+/** A place filter for global discovery. Both fields optional: null means anywhere. */
+export interface PlaceQuery {
+  city?: string | null;
+  countryCode?: string | null;
+}
+
 export interface Repository {
   readonly kind: 'demo' | 'supabase';
 
@@ -147,6 +172,19 @@ export interface Repository {
 
   // ---- matching ----
   getMatches(viewerId: string, filters: DiscoverFilters): Promise<MatchResult[]>;
+
+  // ---- location discovery ----
+  /**
+   * Members who have opted into nearby discovery within the radius.
+   *
+   * Resolves to an empty array when nobody eligible is nearby, which the
+   * interface must present as an honest empty state rather than as an error.
+   */
+  listNearbyPeople(viewerId: string, query: NearbyQuery): Promise<NearbyPerson[]>;
+  /** Communities with a recorded area within the radius. */
+  listNearbyCommunities(viewerId: string, query: NearbyQuery): Promise<NearbyCommunity[]>;
+  /** Discoverable members who recorded the given city and/or country. */
+  listPeopleInPlace(viewerId: string, query: PlaceQuery): Promise<Profile[]>;
 
   // ---- communities ----
   listCommunities(viewerId: string, query: CommunityQuery): Promise<Community[]>;

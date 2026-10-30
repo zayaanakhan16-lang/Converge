@@ -79,15 +79,15 @@ as $$
           from public.community_members mine
           join public.community_members theirs
             on theirs.community_id = mine.community_id
-          where mine.user_id = viewer
-            and theirs.user_id = owner
+          where mine.profile_id = viewer
+            and theirs.profile_id = owner
             and mine.state = 'member'
             and theirs.state = 'member'
         )
         when 'connections' then exists (
           select 1 from public.connections c
-          where c.user_low = least(viewer, owner)
-            and c.user_high = greatest(viewer, owner)
+          where c.user_a = least(viewer, owner)
+            and c.user_b = greatest(viewer, owner)
         )
         else false
       end

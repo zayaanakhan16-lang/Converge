@@ -14,6 +14,7 @@ import {
 } from '../../data/demo';
 import {
   applyFilters,
+  haversineKm,
   rankMatches,
   type DiscoverFilters,
   type MatchContext,
@@ -21,6 +22,7 @@ import {
 import { snapToGrid } from '../../utils/geo';
 import type {
   AppNotification,
+  ApproximateLocation,
   BlockedUser,
   Community,
   CommunityEvent,
@@ -43,6 +45,10 @@ import {
   type CreateCommunityInput,
   type CreateEventInput,
   type EventQuery,
+  type NearbyCommunity,
+  type NearbyPerson,
+  type NearbyQuery,
+  type PlaceQuery,
   type ProfileUpdate,
   type Repository,
   type SendMessageInput,
@@ -405,6 +411,92 @@ export class DemoRepository implements Repository {
     const candidates = [...this.state.profiles.values()];
     const ranked = rankMatches(viewer, candidates, context);
     return applyFilters(ranked, filters, viewer, context);
+  }
+
+  // ---- location discovery ----------------------------------------------
+
+  /**
+   * Members near a point.
+   *
+   * Applies the same eligibility rules the SQL function enforces — opted in,
+   * discoverable, not blocked, not the viewer — so demo mode exercises the same
+   * privacy conditions as a live backend. Distances are rounded to whole
+   * kilometres, as they are by the SQL function.
+   */
+  async listNearbyPeople(viewerId: string, query: NearbyQuery): Promise<NearbyPerson[]> {
+    await delay(160);
+    if (!query.center) return [];
+
+    const origin: ApproximateLocation = {
+      latitude: query.center.latitude,
+      longitude: query.center.longitude,
+    };
+    const blocked = this.state.blocked;
+
+    return [...this.state.profiles.values()]
+      .filter(
+        (profile) =>
+          profile.id !== viewerId &&
+          profile.privacy.visibility === 'discoverable' &&
+          profile.privacy.nearbyDiscoveryEnabled &&
+          profile.location !== null &&
+          !blocked.has(profile.id),
+      )
+      .map((profile) => ({
+        profile,
+        distanceKm: Math.round(haversineKm(origin, profile.location as ApproximateLocation)),
+      }))
+      .filter((entry) => entry.distanceKm <= query.radiusKm)
+      .sort((a, b) => a.distanceKm - b.distanceKm);
+  }
+
+  /** Communities with a recorded area inside the radius. */
+  async listNearbyCommunities(
+    viewerId: string,
+    query: NearbyQuery,
+  ): Promise<NearbyCommunity[]> {
+    await delay(160);
+    if (!query.center) return [];
+
+    const origin: ApproximateLocation = {
+      latitude: query.center.latitude,
+      longitude: query.center.longitude,
+    };
+    // Demo state models a single signed-in member, so the membership table
+    // already belongs to whoever is viewing.
+    const joined = new Set(
+      [...this.state.memberships.entries()]
+        .filter(([, membership]) => membership.state === 'member')
+        .map(([id]) => id),
+    );
+    void viewerId;
+
+    return [...this.state.communities.values()]
+      .filter((community) => community.location !== null)
+      // A private community's location is itself information, so it is only
+      // returned to a member who already belongs.
+      .filter((community) => !community.isPrivate || joined.has(community.id))
+      .map((community) => ({
+        community,
+        distanceKm: Math.round(haversineKm(origin, community.location as ApproximateLocation)),
+      }))
+      .filter((entry) => entry.distanceKm <= query.radiusKm)
+      .sort((a, b) => a.distanceKm - b.distanceKm);
+  }
+
+  /** Discoverable members who recorded the given city and/or country. */
+  async listPeopleInPlace(viewerId: string, query: PlaceQuery): Promise<Profile[]> {
+    await delay(140);
+    const city = query.city?.trim().toLowerCase() ?? null;
+    const country = query.countryCode?.trim().toUpperCase() ?? null;
+
+    return [...this.state.profiles.values()].filter((profile) => {
+      if (profile.id === viewerId) return false;
+      if (profile.privacy.visibility !== 'discoverable') return false;
+      if (city && !profile.location?.city?.toLowerCase().includes(city)) return false;
+      if (country && profile.location?.countryCode !== country) return false;
+      return true;
+    });
   }
 
   // ---- communities ------------------------------------------------------

@@ -1,6 +1,13 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Compass, MessageSquareText, UserRound, Users, Handshake } from 'lucide-react-native';
+import {
+  Compass,
+  Handshake,
+  MapPinned,
+  MessageSquareText,
+  UserRound,
+  Users,
+} from 'lucide-react-native';
 import { StyleSheet } from 'react-native';
 
 import { Badge } from '../components/ui/Chip';
@@ -21,6 +28,8 @@ import { ConnectionsScreen } from '../screens/connections/ConnectionsScreen';
 import { DiscoverScreen } from '../screens/discover/DiscoverScreen';
 import { FiltersScreen } from '../screens/discover/FiltersScreen';
 import { ProfileDetailScreen } from '../screens/discover/ProfileDetailScreen';
+import { LocationPickerScreen } from '../screens/discover/LocationPickerScreen';
+import { NearbyScreen } from '../screens/discover/NearbyScreen';
 import { ChatScreen } from '../screens/messages/ChatScreen';
 import { ConversationsScreen } from '../screens/messages/ConversationsScreen';
 import { BlockedAccountsScreen } from '../screens/profile/BlockedAccountsScreen';
@@ -39,12 +48,14 @@ import type {
   ConnectionsStackParamList,
   DiscoverStackParamList,
   MainTabParamList,
+  NearbyStackParamList,
   MessagesStackParamList,
   ProfileStackParamList,
 } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const DiscoverStack = createNativeStackNavigator<DiscoverStackParamList>();
+const NearbyStack = createNativeStackNavigator<NearbyStackParamList>();
 const CommunitiesStack = createNativeStackNavigator<CommunitiesStackParamList>();
 const ConnectionsStack = createNativeStackNavigator<ConnectionsStackParamList>();
 const MessagesStack = createNativeStackNavigator<MessagesStackParamList>();
@@ -87,6 +98,40 @@ function DiscoverNavigator() {
       />
       <DiscoverStack.Screen name="Coach" component={CoachScreen} options={{ title: 'Coach' }} />
     </DiscoverStack.Navigator>
+  );
+}
+
+/**
+ * Nearby Network.
+ *
+ * `ProfileDetail` and `CommunityDetail` reuse the same components as the other
+ * stacks so a member or community looks identical wherever it is opened from.
+ */
+function NearbyNavigator() {
+  const options = useStackScreenOptions();
+  return (
+    <NearbyStack.Navigator screenOptions={options}>
+      <NearbyStack.Screen
+        name="NearbyHome"
+        component={NearbyScreen}
+        options={{ headerShown: false, title: 'Nearby' }}
+      />
+      <NearbyStack.Screen
+        name="LocationPicker"
+        component={LocationPickerScreen}
+        options={{ title: 'Choose an area' }}
+      />
+      <NearbyStack.Screen
+        name="ProfileDetail"
+        component={ProfileDetailScreen}
+        options={{ title: 'Member' }}
+      />
+      <NearbyStack.Screen
+        name="CommunityDetail"
+        component={CommunityDetailScreen}
+        options={{ title: 'Community' }}
+      />
+    </NearbyStack.Navigator>
   );
 }
 
@@ -284,6 +329,16 @@ export function MainTabs() {
           tabBarLabel: 'Discover',
           tabBarIcon: ({ color, size }) => (
             <Compass size={size ?? 22} color={color} strokeWidth={2} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Nearby"
+        component={NearbyNavigator}
+        options={{
+          tabBarLabel: 'Nearby',
+          tabBarIcon: ({ color, size }) => (
+            <MapPinned size={size ?? 22} color={color} strokeWidth={2} />
           ),
         }}
       />

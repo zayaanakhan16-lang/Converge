@@ -30,10 +30,27 @@ export type OnboardingStackParamList = {
 
 export type MainTabParamList = {
   Discover: undefined;
+  Nearby: undefined;
   Communities: undefined;
   Connections: undefined;
   Messages: undefined;
   Profile: undefined;
+};
+
+/**
+ * Nearby Network.
+ *
+ * Has its own stack rather than sharing the Discover one, so the Nearby flow can
+ * be entered from the tab bar directly. `ProfileDetail` and `CommunityDetail`
+ * are the same screen components reused here; React Navigation supports a
+ * screen appearing in more than one stack, and reusing them avoids maintaining
+ * two copies of the same view.
+ */
+export type NearbyStackParamList = {
+  NearbyHome: undefined;
+  LocationPicker: undefined;
+  ProfileDetail: { userId: string };
+  CommunityDetail: { communityId: string };
 };
 
 export type DiscoverStackParamList = {

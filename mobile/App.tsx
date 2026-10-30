@@ -4,6 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { Text } from './src/components/ui/Text';
 import { AuthProvider } from './src/context/AuthContext';
+import { LocationProvider } from './src/context/LocationContext';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { useBrandFonts } from './src/hooks/useBrandFonts';
 import { RootNavigation } from './src/navigation/RootNavigation';
@@ -38,7 +39,11 @@ function Shell() {
 
   return (
     <AuthProvider>
-      <RootNavigation />
+      {/* Inside AuthProvider: the discovery area is scoped to the signed-in
+          member and is dropped when they sign out. */}
+      <LocationProvider>
+        <RootNavigation />
+      </LocationProvider>
       <StatusBar style={theme.statusBar} />
     </AuthProvider>
   );

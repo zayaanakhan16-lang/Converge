@@ -22,11 +22,41 @@ export const DEMO_VIEWER_ID = 'demo-user-1';
 
 /** Grid-snapped coordinates. Exact device positions are never stored. */
 const AREA = {
-  northside: { latitude: 53.49, longitude: -2.24, areaLabel: 'Northside' } as ApproximateLocation,
-  riverside: { latitude: 53.46, longitude: -2.25, areaLabel: 'Riverside' } as ApproximateLocation,
-  eastgate: { latitude: 53.48, longitude: -2.2, areaLabel: 'Eastgate' } as ApproximateLocation,
-  westpark: { latitude: 53.47, longitude: -2.29, areaLabel: 'West Park' } as ApproximateLocation,
-  southquay: { latitude: 53.44, longitude: -2.23, areaLabel: 'South Quay' } as ApproximateLocation,
+  northside: {
+    latitude: 53.49,
+    longitude: -2.24,
+    areaLabel: 'Northside',
+    city: 'Manchester',
+    countryCode: 'GB',
+  } as ApproximateLocation,
+  riverside: {
+    latitude: 53.46,
+    longitude: -2.25,
+    areaLabel: 'Riverside',
+    city: 'Manchester',
+    countryCode: 'GB',
+  } as ApproximateLocation,
+  eastgate: {
+    latitude: 53.48,
+    longitude: -2.2,
+    areaLabel: 'Eastgate',
+    city: 'Manchester',
+    countryCode: 'GB',
+  } as ApproximateLocation,
+  westpark: {
+    latitude: 53.47,
+    longitude: -2.29,
+    areaLabel: 'West Park',
+    city: 'Salford',
+    countryCode: 'GB',
+  } as ApproximateLocation,
+  southquay: {
+    latitude: 53.44,
+    longitude: -2.23,
+    areaLabel: 'South Quay',
+    city: 'Manchester',
+    countryCode: 'GB',
+  } as ApproximateLocation,
 };
 
 function baseProfile(overrides: Partial<Profile> & Pick<Profile, 'id' | 'displayName'>): Profile {
@@ -62,7 +92,15 @@ export const DEMO_PROFILES: Profile[] = [
     goals: ['find-collaborators', 'build-confidence', 'learn-skill'],
     preferredActivities: ['study-sessions', 'hackathons', 'workshops'],
     location: AREA.northside,
-    privacy: { ...DEFAULT_PRIVACY, shareApproximateLocation: true },
+    // Mirrors a member who completed onboarding and opted into discovery. The
+    // visibility value matches the condition the SQL functions apply, so demo
+    // mode and a live backend admit exactly the same members.
+    privacy: {
+      ...DEFAULT_PRIVACY,
+      visibility: 'discoverable',
+      shareApproximateLocation: true,
+      nearbyDiscoveryEnabled: true,
+    },
   }),
   baseProfile({
     id: 'demo-user-2',
@@ -76,7 +114,15 @@ export const DEMO_PROFILES: Profile[] = [
     goals: ['find-collaborators', 'mentor-others'],
     preferredActivities: ['hackathons', 'workshops', 'exhibitions'],
     location: AREA.riverside,
-    privacy: { ...DEFAULT_PRIVACY, shareApproximateLocation: true },
+    // Mirrors a member who completed onboarding and opted into discovery. The
+    // visibility value matches the condition the SQL functions apply, so demo
+    // mode and a live backend admit exactly the same members.
+    privacy: {
+      ...DEFAULT_PRIVACY,
+      visibility: 'discoverable',
+      shareApproximateLocation: true,
+      nearbyDiscoveryEnabled: true,
+    },
   }),
   baseProfile({
     id: 'demo-user-3',
@@ -90,7 +136,15 @@ export const DEMO_PROFILES: Profile[] = [
     goals: ['find-collaborators', 'volunteer', 'practise-language'],
     preferredActivities: ['study-sessions', 'walking-groups', 'volunteer-days'],
     location: AREA.eastgate,
-    privacy: { ...DEFAULT_PRIVACY, shareApproximateLocation: true },
+    // Mirrors a member who completed onboarding and opted into discovery. The
+    // visibility value matches the condition the SQL functions apply, so demo
+    // mode and a live backend admit exactly the same members.
+    privacy: {
+      ...DEFAULT_PRIVACY,
+      visibility: 'discoverable',
+      shareApproximateLocation: true,
+      nearbyDiscoveryEnabled: true,
+    },
   }),
   baseProfile({
     id: 'demo-user-4',
@@ -104,7 +158,15 @@ export const DEMO_PROFILES: Profile[] = [
     goals: ['learn-skill', 'make-friends', 'find-collaborators'],
     preferredActivities: ['study-sessions', 'sports-meetups', 'workshops'],
     location: AREA.westpark,
-    privacy: { ...DEFAULT_PRIVACY, shareApproximateLocation: true },
+    // Mirrors a member who completed onboarding and opted into discovery. The
+    // visibility value matches the condition the SQL functions apply, so demo
+    // mode and a live backend admit exactly the same members.
+    privacy: {
+      ...DEFAULT_PRIVACY,
+      visibility: 'discoverable',
+      shareApproximateLocation: true,
+      nearbyDiscoveryEnabled: true,
+    },
   }),
   baseProfile({
     id: 'demo-user-5',
@@ -118,7 +180,15 @@ export const DEMO_PROFILES: Profile[] = [
     goals: ['practise-language', 'join-community', 'make-friends'],
     preferredActivities: ['language-exchange', 'open-mics', 'book-clubs'],
     location: AREA.riverside,
-    privacy: { ...DEFAULT_PRIVACY, shareApproximateLocation: true },
+    // Mirrors a member who completed onboarding and opted into discovery. The
+    // visibility value matches the condition the SQL functions apply, so demo
+    // mode and a live backend admit exactly the same members.
+    privacy: {
+      ...DEFAULT_PRIVACY,
+      visibility: 'discoverable',
+      shareApproximateLocation: true,
+      nearbyDiscoveryEnabled: true,
+    },
   }),
   baseProfile({
     id: 'demo-user-6',
@@ -132,7 +202,15 @@ export const DEMO_PROFILES: Profile[] = [
     goals: ['mentor-others', 'find-collaborators', 'volunteer'],
     preferredActivities: ['workshops', 'hackathons', 'volunteer-days'],
     location: AREA.eastgate,
-    privacy: { ...DEFAULT_PRIVACY, shareApproximateLocation: true },
+    // Mirrors a member who completed onboarding and opted into discovery. The
+    // visibility value matches the condition the SQL functions apply, so demo
+    // mode and a live backend admit exactly the same members.
+    privacy: {
+      ...DEFAULT_PRIVACY,
+      visibility: 'discoverable',
+      shareApproximateLocation: true,
+      nearbyDiscoveryEnabled: true,
+    },
   }),
   baseProfile({
     id: 'demo-user-7',
@@ -146,7 +224,15 @@ export const DEMO_PROFILES: Profile[] = [
     goals: ['find-collaborators', 'make-friends'],
     preferredActivities: ['exhibitions', 'volunteer-days', 'open-mics'],
     location: AREA.southquay,
-    privacy: { ...DEFAULT_PRIVACY, shareApproximateLocation: true },
+    // Mirrors a member who completed onboarding and opted into discovery. The
+    // visibility value matches the condition the SQL functions apply, so demo
+    // mode and a live backend admit exactly the same members.
+    privacy: {
+      ...DEFAULT_PRIVACY,
+      visibility: 'discoverable',
+      shareApproximateLocation: true,
+      nearbyDiscoveryEnabled: true,
+    },
   }),
   baseProfile({
     id: 'demo-user-8',
@@ -160,7 +246,15 @@ export const DEMO_PROFILES: Profile[] = [
     goals: ['volunteer', 'mentor-others', 'join-community'],
     preferredActivities: ['volunteer-days', 'walking-groups', 'workshops'],
     location: AREA.westpark,
-    privacy: { ...DEFAULT_PRIVACY, shareApproximateLocation: true },
+    // Mirrors a member who completed onboarding and opted into discovery. The
+    // visibility value matches the condition the SQL functions apply, so demo
+    // mode and a live backend admit exactly the same members.
+    privacy: {
+      ...DEFAULT_PRIVACY,
+      visibility: 'discoverable',
+      shareApproximateLocation: true,
+      nearbyDiscoveryEnabled: true,
+    },
   }),
   baseProfile({
     id: 'demo-user-9',
@@ -174,7 +268,15 @@ export const DEMO_PROFILES: Profile[] = [
     goals: ['mentor-others', 'build-confidence'],
     preferredActivities: ['workshops', 'book-clubs', 'study-sessions'],
     location: AREA.northside,
-    privacy: { ...DEFAULT_PRIVACY, shareApproximateLocation: true },
+    // Mirrors a member who completed onboarding and opted into discovery. The
+    // visibility value matches the condition the SQL functions apply, so demo
+    // mode and a live backend admit exactly the same members.
+    privacy: {
+      ...DEFAULT_PRIVACY,
+      visibility: 'discoverable',
+      shareApproximateLocation: true,
+      nearbyDiscoveryEnabled: true,
+    },
   }),
   baseProfile({
     id: 'demo-user-10',
@@ -188,7 +290,15 @@ export const DEMO_PROFILES: Profile[] = [
     goals: ['practise-language', 'find-collaborators', 'make-friends'],
     preferredActivities: ['open-mics', 'language-exchange', 'workshops'],
     location: AREA.eastgate,
-    privacy: { ...DEFAULT_PRIVACY, shareApproximateLocation: true },
+    // Mirrors a member who completed onboarding and opted into discovery. The
+    // visibility value matches the condition the SQL functions apply, so demo
+    // mode and a live backend admit exactly the same members.
+    privacy: {
+      ...DEFAULT_PRIVACY,
+      visibility: 'discoverable',
+      shareApproximateLocation: true,
+      nearbyDiscoveryEnabled: true,
+    },
   }),
   baseProfile({
     id: 'demo-user-11',
@@ -202,7 +312,15 @@ export const DEMO_PROFILES: Profile[] = [
     goals: ['mentor-others', 'find-collaborators'],
     preferredActivities: ['workshops', 'study-sessions', 'hackathons'],
     location: AREA.riverside,
-    privacy: { ...DEFAULT_PRIVACY, shareApproximateLocation: true },
+    // Mirrors a member who completed onboarding and opted into discovery. The
+    // visibility value matches the condition the SQL functions apply, so demo
+    // mode and a live backend admit exactly the same members.
+    privacy: {
+      ...DEFAULT_PRIVACY,
+      visibility: 'discoverable',
+      shareApproximateLocation: true,
+      nearbyDiscoveryEnabled: true,
+    },
   }),
   baseProfile({
     id: 'demo-user-12',
@@ -216,7 +334,15 @@ export const DEMO_PROFILES: Profile[] = [
     goals: ['volunteer', 'make-friends', 'learn-skill'],
     preferredActivities: ['workshops', 'volunteer-days', 'exhibitions'],
     location: AREA.southquay,
-    privacy: { ...DEFAULT_PRIVACY, shareApproximateLocation: true },
+    // Mirrors a member who completed onboarding and opted into discovery. The
+    // visibility value matches the condition the SQL functions apply, so demo
+    // mode and a live backend admit exactly the same members.
+    privacy: {
+      ...DEFAULT_PRIVACY,
+      visibility: 'discoverable',
+      shareApproximateLocation: true,
+      nearbyDiscoveryEnabled: true,
+    },
   }),
   baseProfile({
     id: 'demo-user-13',
@@ -230,7 +356,15 @@ export const DEMO_PROFILES: Profile[] = [
     goals: ['make-friends', 'practise-language'],
     preferredActivities: ['sports-meetups', 'walking-groups', 'workshops'],
     location: AREA.northside,
-    privacy: { ...DEFAULT_PRIVACY, shareApproximateLocation: true },
+    // Mirrors a member who completed onboarding and opted into discovery. The
+    // visibility value matches the condition the SQL functions apply, so demo
+    // mode and a live backend admit exactly the same members.
+    privacy: {
+      ...DEFAULT_PRIVACY,
+      visibility: 'discoverable',
+      shareApproximateLocation: true,
+      nearbyDiscoveryEnabled: true,
+    },
   }),
   baseProfile({
     id: 'demo-user-14',

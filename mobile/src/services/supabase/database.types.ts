@@ -45,9 +45,64 @@ export interface Database {
       are_blocked: { Args: { a: string; b: string }; Returns: boolean };
       is_conversation_member: { Args: { conversation: string }; Returns: boolean };
       is_community_member: { Args: { community: string }; Returns: boolean };
+      /**
+       * Nearby discovery. All three return a narrow projection; none returns a
+       * coordinate, and `distance_km` is rounded to whole kilometres.
+       */
       nearby_profiles: {
-        Args: { origin_lat: number; origin_lon: number; radius_km: number };
-        Returns: Array<{ id: string; distance_km: number }>;
+        Args: {
+          viewer: string;
+          center_lat: number;
+          center_lng: number;
+          radius_km?: number;
+          max_results?: number;
+        };
+        Returns: Array<{
+          id: string;
+          display_name: string;
+          headline: string | null;
+          area_label: string | null;
+          city: string | null;
+          country_code: string | null;
+          distance_km: number;
+        }>;
+      };
+      nearby_communities: {
+        Args: {
+          viewer: string;
+          center_lat: number;
+          center_lng: number;
+          radius_km?: number;
+          max_results?: number;
+        };
+        Returns: Array<{
+          id: string;
+          name: string;
+          slug: string;
+          purpose: string;
+          area_label: string | null;
+          city: string | null;
+          country_code: string | null;
+          is_private: boolean;
+          member_count: number;
+          distance_km: number;
+        }>;
+      };
+      profiles_in_place: {
+        Args: {
+          viewer: string;
+          place_city?: string | null;
+          place_country?: string | null;
+          max_results?: number;
+        };
+        Returns: Array<{
+          id: string;
+          display_name: string;
+          headline: string | null;
+          area_label: string | null;
+          city: string | null;
+          country_code: string | null;
+        }>;
       };
       community_by_join_code: {
         Args: { lookup_code: string };
@@ -93,6 +148,12 @@ export interface ProfileRow {
   latitude: number | null;
   longitude: number | null;
   area_label: string | null;
+  city: string | null;
+  country_code: string | null;
+  /** Opt-in to appearing in Nearby Network results. */
+  nearby_discovery_enabled: boolean;
+  /** When the coarse area was last written, so a stale area can be aged out. */
+  location_updated_at: string | null;
   onboarding_completed: boolean;
   created_at: string;
   updated_at: string;
@@ -112,6 +173,9 @@ export interface CommunityRow {
   latitude: number | null;
   longitude: number | null;
   area_label: string | null;
+  city: string | null;
+  country_code: string | null;
+  location_updated_at: string | null;
   created_by: string | null;
   created_at: string;
 }

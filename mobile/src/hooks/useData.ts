@@ -2,8 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useAuth } from '../context/AuthContext';
 import { useAvatarUrls, withAvatar } from './useAvatars';
+import { useLocation } from '../context/LocationContext';
 import { EMPTY_FILTERS, type DiscoverFilters } from '../features/matching/engine';
 import { repository } from '../services';
+import type { NearbyCommunity, NearbyPerson } from '../services/types';
 import type {
   AppNotification,
   Community,
@@ -90,6 +92,77 @@ export function useMatches(filters: DiscoverFilters = EMPTY_FILTERS): AsyncState
   const urls = useAvatarUrls(state.data.map((result) => result.profile.id));
   const data = useMemo(
     () => state.data.map((result) => ({ ...result, profile: withAvatar(result.profile, urls) })),
+    [state.data, urls],
+  );
+  return { ...state, data };
+}
+
+/**
+ * Members near the current discovery area.
+ *
+ * Returns an empty list rather than an error when no area is known, so a screen
+ * can distinguish "we have not been told where you are" from "nobody is nearby".
+ * The distinction matters: the first has a call to action, the second does not.
+ */
+export function useNearbyPeople(radiusKm: number): AsyncState<NearbyPerson[]> {
+  const { user } = useAuth();
+  const { area } = useLocation();
+  const viewerId = user?.id ?? '';
+  const center = area ? { latitude: area.latitude, longitude: area.longitude } : null;
+  const key = center ? `${center.latitude},${center.longitude},${radiusKm}` : 'none';
+
+  const state = useAsync<NearbyPerson[]>(
+    () =>
+      viewerId && center
+        ? repository().listNearbyPeople(viewerId, { center, radiusKm })
+        : Promise.resolve([]),
+    [],
+    [viewerId, key],
+  );
+
+  const urls = useAvatarUrls(state.data.map((entry) => entry.profile.id));
+  const data = useMemo(
+    () =>
+      state.data.map((entry) => ({ ...entry, profile: withAvatar(entry.profile, urls) })),
+    [state.data, urls],
+  );
+  return { ...state, data };
+}
+
+/** Communities near the current discovery area. */
+export function useNearbyCommunities(radiusKm: number): AsyncState<NearbyCommunity[]> {
+  const { user } = useAuth();
+  const { area } = useLocation();
+  const viewerId = user?.id ?? '';
+  const center = area ? { latitude: area.latitude, longitude: area.longitude } : null;
+  const key = center ? `${center.latitude},${center.longitude},${radiusKm}` : 'none';
+
+  return useAsync<NearbyCommunity[]>(
+    () =>
+      viewerId && center
+        ? repository().listNearbyCommunities(viewerId, { center, radiusKm })
+        : Promise.resolve([]),
+    [],
+    [viewerId, key],
+  );
+}
+
+/** Discoverable members who recorded a given city or country. */
+export function usePeopleInPlace(city: string | null, countryCode: string | null) {
+  const { user } = useAuth();
+  const viewerId = user?.id ?? '';
+  const state = useAsync<Profile[]>(
+    () =>
+      viewerId
+        ? repository().listPeopleInPlace(viewerId, { city, countryCode })
+        : Promise.resolve([]),
+    [],
+    [viewerId, city, countryCode],
+  );
+
+  const urls = useAvatarUrls(state.data.map((profile) => profile.id));
+  const data = useMemo(
+    () => state.data.map((profile) => withAvatar(profile, urls)),
     [state.data, urls],
   );
   return { ...state, data };

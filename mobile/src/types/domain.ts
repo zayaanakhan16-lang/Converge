@@ -78,6 +78,10 @@ export interface ApproximateLocation {
   longitude: number;
   /** Free-text area label chosen by the user, e.g. "Northside". */
   areaLabel?: string;
+  /** City from reverse geocoding, used for place search. */
+  city?: string;
+  /** ISO 3166-1 alpha-2 country code from reverse geocoding. */
+  countryCode?: string;
 }
 
 export interface PrivacySettings {
@@ -90,6 +94,14 @@ export interface PrivacySettings {
   showInCommunityLists: boolean;
   /** Who may load the profile photo. Enforced by the storage policy. */
   photoVisibility: PhotoVisibility;
+  /**
+   * Whether the member appears in the Nearby Network.
+   *
+   * Separate from `shareApproximateLocation`: that one says "use my area to rank
+   * others for me", this one says "list me for others". A member can reasonably
+   * want the first without the second, so the two are not combined.
+   */
+  nearbyDiscoveryEnabled: boolean;
 }
 
 export const DEFAULT_PRIVACY: PrivacySettings = {
@@ -98,6 +110,7 @@ export const DEFAULT_PRIVACY: PrivacySettings = {
   allowConnectionRequests: true,
   showInCommunityLists: true,
   photoVisibility: 'community',
+  nearbyDiscoveryEnabled: false,
 };
 
 export interface NotificationSettings {

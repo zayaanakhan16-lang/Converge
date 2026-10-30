@@ -29,12 +29,17 @@ import {
   type CreateCommunityInput,
   type CreateEventInput,
   type EventQuery,
+  type NearbyCommunity,
+  type NearbyPerson,
+  type NearbyQuery,
+  type PlaceQuery,
   type ProfileUpdate,
   type Repository,
   type SendMessageInput,
   type SignUpInput,
 } from '../types';
 import type {
+  Database,
   CommunityMemberRow,
   CommunityMessageRow,
   CommunityRow,
@@ -125,6 +130,8 @@ export class SupabaseRepository implements Repository {
               latitude: row.latitude,
               longitude: row.longitude,
               areaLabel: row.area_label ?? undefined,
+              city: row.city ?? undefined,
+              countryCode: row.country_code ?? undefined,
             }
           : null,
       privacy: {
@@ -133,6 +140,7 @@ export class SupabaseRepository implements Repository {
         allowConnectionRequests: row.allow_connection_requests,
         showInCommunityLists: row.show_in_community_lists,
         photoVisibility: row.photo_visibility,
+        nearbyDiscoveryEnabled: row.nearby_discovery_enabled,
       },
       notifications: {
         connectionRequests: row.notify_connection_requests,
@@ -577,6 +585,128 @@ export class SupabaseRepository implements Repository {
   }
 
   // ---- matching ---------------------------------------------------------
+
+  /**
+   * Members who have opted into nearby discovery, within the radius.
+   *
+   * The work is done by `nearby_profiles`, which returns only the fields the
+   * Nearby list needs and a distance rounded to whole kilometres. Coordinates
+   * are never returned: the caller could not reconstruct a position from a
+   * rounded distance measured against a 5 km grid.
+   */
+  async listNearbyPeople(viewerId: string, query: NearbyQuery): Promise<NearbyPerson[]> {
+    if (!query.center) return [];
+
+    const { data, error } = await this.client.rpc('nearby_profiles', {
+      viewer: viewerId,
+      center_lat: query.center.latitude,
+      center_lng: query.center.longitude,
+      radius_km: query.radiusKm,
+      max_results: 60,
+    });
+    if (error) this.fail(error, 'Could not search for members nearby.');
+
+    // `rpc` is untyped on this client, so the row shape is asserted from the
+    // migration's return signature rather than inferred.
+    const rows = (data ?? []) as Database['public']['Functions']['nearby_profiles']['Returns'];
+    if (rows.length === 0) return [];
+
+    // The function returns a narrow projection, so the full profile is loaded
+    // for the ids it produced. Only members it already decided are eligible are
+    // requested, which keeps the visibility decision in one place.
+    const profiles = await this.loadProfilesByIds(rows.map((row) => row.id));
+    const byId = new Map(profiles.map((profile) => [profile.id, profile]));
+
+    return rows.flatMap((row) => {
+      const profile = byId.get(row.id);
+      return profile ? [{ profile, distanceKm: row.distance_km }] : [];
+    });
+  }
+
+  /** Communities with a recorded area inside the radius. */
+  async listNearbyCommunities(
+    viewerId: string,
+    query: NearbyQuery,
+  ): Promise<NearbyCommunity[]> {
+    if (!query.center) return [];
+
+    const { data, error } = await this.client.rpc('nearby_communities', {
+      viewer: viewerId,
+      center_lat: query.center.latitude,
+      center_lng: query.center.longitude,
+      radius_km: query.radiusKm,
+      max_results: 60,
+    });
+    if (error) this.fail(error, 'Could not search for communities nearby.');
+
+    const rows = (data ?? []) as Database['public']['Functions']['nearby_communities']['Returns'];
+    if (rows.length === 0) return [];
+
+    const communities = await this.loadCommunitiesByIds(rows.map((row) => row.id));
+    const byId = new Map(communities.map((community) => [community.id, community]));
+
+    return rows.flatMap((row) => {
+      const community = byId.get(row.id);
+      return community ? [{ community, distanceKm: row.distance_km }] : [];
+    });
+  }
+
+  /** Discoverable members who recorded the given city and/or country. */
+  async listPeopleInPlace(viewerId: string, query: PlaceQuery): Promise<Profile[]> {
+    const { data, error } = await this.client.rpc('profiles_in_place', {
+      viewer: viewerId,
+      place_city: query.city ?? null,
+      place_country: query.countryCode ?? null,
+      max_results: 60,
+    });
+    if (error) this.fail(error, 'Could not search that place.');
+
+    const rows = (data ?? []) as Database['public']['Functions']['profiles_in_place']['Returns'];
+    return this.loadProfilesByIds(rows.map((row) => row.id));
+  }
+
+  /** Load full profiles for a set of ids, with their relation tables. */
+  private async loadProfilesByIds(ids: string[]): Promise<Profile[]> {
+    if (ids.length === 0) return [];
+    const { data, error } = await this.client
+      .from('profiles')
+      .select(PROFILE_SELECT)
+      .in('id', ids);
+    if (error) this.fail(error, 'Could not load those profiles.');
+    return (data ?? []).map((row) => this.mapProfile(row));
+  }
+
+  /**
+   * Load communities for a set of ids, with their interest and language tags.
+   *
+   * Mirrors `listCommunities`, including loading join codes through the
+   * security-definer function rather than a plain select, so a community's
+   * invite code is only present for communities the viewer may see.
+   */
+  private async loadCommunitiesByIds(ids: string[]): Promise<Community[]> {
+    if (ids.length === 0) return [];
+    const { data, error } = await this.client
+      .from('communities')
+      .select(COMMUNITY_SELECT)
+      .in('id', ids);
+    if (error) this.fail(error, 'Could not load those communities.');
+
+    const rows = (data ?? []) as CommunityRow[];
+    const [relations, joinCodes] = await Promise.all([
+      this.loadCommunityInterests(rows.map((row) => row.id)),
+      this.loadJoinCodes(),
+    ]);
+
+    return rows.map((row) => {
+      const relation = relations.get(row.id) ?? { interests: [], languages: [] };
+      return this.mapCommunity(
+        row,
+        relation.interests,
+        relation.languages,
+        joinCodes.get(row.id) ?? null,
+      );
+    });
+  }
 
   async getMatches(viewerId: string, filters: DiscoverFilters): Promise<MatchResult[]> {
     // Scoring runs in the Python backend when configured, and falls back to the

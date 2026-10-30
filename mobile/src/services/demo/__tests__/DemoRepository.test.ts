@@ -248,3 +248,104 @@ describe('DemoRepository validation', () => {
     ).rejects.toBeInstanceOf(RepositoryError);
   });
 });
+
+/**
+ * Location discovery.
+ *
+ * These assert the privacy conditions rather than the happy path alone: that a
+ * member who has not opted in is never returned, that blocking is honoured, and
+ * that distances are whole kilometres so a distance cannot be read as a
+ * position.
+ */
+describe('DemoRepository nearby discovery', () => {
+  const CENTRE = { latitude: 53.48, longitude: -2.24 };
+  const WIDE = { center: CENTRE, radiusKm: 100 };
+
+  it('returns only members who opted into nearby discovery', async () => {
+    const repo = await signedIn();
+    const nearby = await repo.listNearbyPeople(DEMO_VIEWER_ID, WIDE);
+
+    expect(nearby.length).toBeGreaterThan(0);
+    for (const entry of nearby) {
+      expect(entry.profile.privacy.nearbyDiscoveryEnabled).toBe(true);
+      expect(entry.profile.privacy.visibility).toBe('discoverable');
+      expect(entry.profile.location).not.toBeNull();
+    }
+  });
+
+  it('never returns the viewer', async () => {
+    const repo = await signedIn();
+    const nearby = await repo.listNearbyPeople(DEMO_VIEWER_ID, WIDE);
+    expect(nearby.some((entry) => entry.profile.id === DEMO_VIEWER_ID)).toBe(false);
+  });
+
+  it('drops a member from results once they are blocked', async () => {
+    const repo = await signedIn();
+    const before = await repo.listNearbyPeople(DEMO_VIEWER_ID, WIDE);
+    expect(before.length).toBeGreaterThan(0);
+
+    const target = before[0].profile.id;
+    await repo.blockUser(DEMO_VIEWER_ID, target);
+
+    const after = await repo.listNearbyPeople(DEMO_VIEWER_ID, WIDE);
+    expect(after.some((entry) => entry.profile.id === target)).toBe(false);
+    expect(after.length).toBe(before.length - 1);
+  });
+
+  it('rounds every distance to whole kilometres', async () => {
+    const repo = await signedIn();
+    const nearby = await repo.listNearbyPeople(DEMO_VIEWER_ID, WIDE);
+    for (const entry of nearby) {
+      expect(Number.isInteger(entry.distanceKm)).toBe(true);
+    }
+  });
+
+  it('honours the radius and sorts nearest first', async () => {
+    const repo = await signedIn();
+    const narrow = await repo.listNearbyPeople(DEMO_VIEWER_ID, { center: CENTRE, radiusKm: 1 });
+    const wide = await repo.listNearbyPeople(DEMO_VIEWER_ID, WIDE);
+
+    expect(narrow.length).toBeLessThanOrEqual(wide.length);
+    for (const entry of narrow) expect(entry.distanceKm).toBeLessThanOrEqual(1);
+    for (let i = 1; i < wide.length; i += 1) {
+      expect(wide[i].distanceKm).toBeGreaterThanOrEqual(wide[i - 1].distanceKm);
+    }
+  });
+
+  it('returns nothing when no area is known', async () => {
+    const repo = await signedIn();
+    const nearby = await repo.listNearbyPeople(DEMO_VIEWER_ID, { center: null, radiusKm: 25 });
+    expect(nearby).toEqual([]);
+  });
+
+  it('finds communities near a point and excludes those out of range', async () => {
+    const repo = await signedIn();
+    const nearby = await repo.listNearbyCommunities(DEMO_VIEWER_ID, WIDE);
+    expect(nearby.length).toBeGreaterThan(0);
+    for (const entry of nearby) {
+      expect(entry.community.location).not.toBeNull();
+      expect(entry.distanceKm).toBeLessThanOrEqual(WIDE.radiusKm);
+    }
+  });
+
+  it('filters members by recorded place for global discovery', async () => {
+    const repo = await signedIn();
+    const inCity = await repo.listPeopleInPlace(DEMO_VIEWER_ID, { city: 'Manchester' });
+    expect(inCity.length).toBeGreaterThan(0);
+    for (const profile of inCity) {
+      expect(profile.location?.city).toBe('Manchester');
+      expect(profile.privacy.visibility).toBe('discoverable');
+    }
+
+    const elsewhere = await repo.listPeopleInPlace(DEMO_VIEWER_ID, { city: 'Nowhere' });
+    expect(elsewhere).toEqual([]);
+  });
+
+  it('filters members by country code, case-insensitively', async () => {
+    const repo = await signedIn();
+    const upper = await repo.listPeopleInPlace(DEMO_VIEWER_ID, { countryCode: 'GB' });
+    const lower = await repo.listPeopleInPlace(DEMO_VIEWER_ID, { countryCode: 'gb' });
+    expect(upper.length).toBeGreaterThan(0);
+    expect(lower.length).toBe(upper.length);
+  });
+});
