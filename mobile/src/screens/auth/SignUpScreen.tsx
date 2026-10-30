@@ -7,7 +7,7 @@ import { Text } from '../../components/ui/Text';
 import { TextField } from '../../components/ui/TextField';
 import { useAuth } from '../../context/AuthContext';
 import type { AuthStackParamList } from '../../navigation/types';
-import { spacing } from '../../theme';
+import { MIN_TOUCH_TARGET, spacing } from '../../theme';
 import {
   MAX_DISPLAY_NAME_LENGTH,
   firstErrorFor,
@@ -89,7 +89,7 @@ export function SignUpScreen({ navigation }: Props) {
             onPress={() => navigation.navigate('SignIn')}
             accessibilityRole="button"
             accessibilityLabel="Sign in instead"
-            hitSlop={8}
+            style={styles.footerLink}
           >
             <Text token="caption" tone="accent">
               Sign in
@@ -201,4 +201,9 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   termsText: { flex: 1 },
+  footerLink: {
+    minHeight: MIN_TOUCH_TARGET,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xs,
+  },
 });

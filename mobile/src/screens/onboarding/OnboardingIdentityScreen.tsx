@@ -11,7 +11,7 @@ import { TextField } from '../../components/ui/TextField';
 import { useOnboarding } from '../../features/onboarding/OnboardingContext';
 import { useTheme } from '../../context/ThemeContext';
 import type { OnboardingStackParamList } from '../../navigation/types';
-import { radius, spacing } from '../../theme';
+import { MIN_TOUCH_TARGET, radius, spacing } from '../../theme';
 import {
   MAX_BIO_LENGTH,
   MAX_DISPLAY_NAME_LENGTH,
@@ -157,10 +157,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.lg,
     borderRadius: radius.md,
     borderWidth: StyleSheet.hairlineWidth * 2,
+    minHeight: MIN_TOUCH_TARGET,
   },
   multiline: { marginBottom: spacing.sm },
 });

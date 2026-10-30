@@ -9,7 +9,7 @@ import { DEMO_ACCOUNT } from '../../data/demo';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import type { AuthStackParamList } from '../../navigation/types';
-import { spacing } from '../../theme';
+import { MIN_TOUCH_TARGET, spacing } from '../../theme';
 import { firstErrorFor, validateEmail, validateFields } from '../../utils/validation';
 import { AuthLayout } from './AuthLayout';
 
@@ -56,7 +56,7 @@ export function SignInScreen({ navigation }: Props) {
             onPress={() => navigation.navigate('SignUp')}
             accessibilityRole="button"
             accessibilityLabel="Create an account"
-            hitSlop={8}
+            style={styles.footerLink}
           >
             <Text token="caption" tone="accent">
               Create an account
@@ -136,7 +136,17 @@ export function SignInScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   footerRow: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center' },
-  forgot: { alignSelf: 'center', paddingVertical: spacing.sm },
+  forgot: {
+    alignSelf: 'center',
+    minHeight: MIN_TOUCH_TARGET,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.sm,
+  },
+  footerLink: {
+    minHeight: MIN_TOUCH_TARGET,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xs,
+  },
   demoBox: {
     borderRadius: 10,
     borderWidth: StyleSheet.hairlineWidth * 2,

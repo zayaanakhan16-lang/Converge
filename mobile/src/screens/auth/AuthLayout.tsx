@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ConvergeMark } from '../../components/brand/ConvergeMark';
 import { Text } from '../../components/ui/Text';
 import { useTheme } from '../../context/ThemeContext';
-import { spacing } from '../../theme';
+import { MIN_TOUCH_TARGET, spacing } from '../../theme';
 
 export interface AuthLayoutProps {
   title: string;
@@ -79,7 +79,17 @@ const styles = StyleSheet.create({
   fill: { flex: 1 },
   content: { flexGrow: 1, justifyContent: 'center', paddingVertical: spacing.xxxl },
   column: { width: '100%', maxWidth: 480, alignSelf: 'center', paddingHorizontal: spacing.xl },
-  back: { alignSelf: 'flex-start', marginBottom: spacing.lg, padding: spacing.xs },
+  back: {
+    alignSelf: 'flex-start',
+    marginBottom: spacing.lg,
+    minWidth: MIN_TOUCH_TARGET,
+    minHeight: MIN_TOUCH_TARGET,
+    alignItems: 'center',
+    justifyContent: 'center',
+    // Pulled left so the icon still optically aligns with the text column,
+    // which the target would otherwise push inward.
+    marginLeft: -spacing.md,
+  },
   brand: { marginBottom: spacing.xl },
   heading: { gap: spacing.sm, marginBottom: spacing.xxl },
   subtitle: { maxWidth: 380 },

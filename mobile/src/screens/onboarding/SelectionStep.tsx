@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Chip } from '../../components/ui/Chip';
 import { SearchField } from '../../components/ui/TextField';
 import { Text } from '../../components/ui/Text';
 import { useTheme } from '../../context/ThemeContext';
-import { radius, spacing } from '../../theme';
+import { MIN_TOUCH_TARGET, radius, spacing } from '../../theme';
 
 export interface SelectionOption {
   id: string;
@@ -119,15 +119,18 @@ export function SelectionStep({
                   {groupLabels?.[group] ?? group}
                 </Text>
                 {allowGroupSelect && onSelectGroup ? (
-                  <Text
-                    token="caption"
-                    tone="accent"
+                  // A control, not a label: it needs a real target, so it is a
+                  // Pressable rather than text with an onPress.
+                  <Pressable
                     onPress={() => onSelectGroup(items.map((item) => item.id))}
                     accessibilityRole="button"
                     accessibilityLabel={`Select all in ${groupLabels?.[group] ?? group}`}
+                    style={styles.selectAll}
                   >
-                    Select all
-                  </Text>
+                    <Text token="caption" tone="accent">
+                      Select all
+                    </Text>
+                  </Pressable>
                 ) : null}
               </View>
             ) : null}
@@ -161,6 +164,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.sm,
+  },
+  selectAll: {
+    minHeight: MIN_TOUCH_TARGET,
+    justifyContent: 'center',
+    paddingLeft: spacing.md,
   },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   empty: { paddingVertical: spacing.xxl, textAlign: 'center' },

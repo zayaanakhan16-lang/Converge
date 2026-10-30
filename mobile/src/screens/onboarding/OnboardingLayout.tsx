@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/ui/Button';
 import { Text } from '../../components/ui/Text';
 import { useTheme } from '../../context/ThemeContext';
-import { radius, spacing } from '../../theme';
+import { MIN_TOUCH_TARGET, radius, spacing } from '../../theme';
 
 export interface OnboardingLayoutProps {
   step: number;
@@ -238,7 +238,15 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     gap: spacing.md,
   },
-  back: { width: 32, height: 32, alignItems: 'flex-start', justifyContent: 'center' },
+  back: {
+    minWidth: MIN_TOUCH_TARGET,
+    minHeight: MIN_TOUCH_TARGET,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    // Keeps the chevron optically aligned with the text column while the
+    // target itself grows around it.
+    marginLeft: -spacing.sm,
+  },
   progress: { flex: 1, flexDirection: 'row', gap: spacing.xs },
   segment: { flex: 1, height: 3, borderRadius: radius.pill },
   scroll: { flexGrow: 1, paddingBottom: spacing.xxl },
