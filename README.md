@@ -99,7 +99,7 @@ Converge/
 |- mobile/                 Expo application
 |  |- src/
 |  |  |- components/       UI primitives and the brand mark
-|  |  |- screens/          43 screens, grouped by area
+|  |  |- screens/          41 screens, grouped by area
 |  |  |- features/         matching, coach, messaging, communities, ...
 |  |  |- navigation/       Tab and stack structure
 |  |  |- services/         Repository interface, Supabase and demo implementations
@@ -167,10 +167,14 @@ For Supabase, the backend, the database tests and the Android build, see
 
 ```bash
 cd mobile && npx tsc --noEmit && npx eslint . --max-warnings 0 && npx jest
-cd backend && pytest
-cd android-native/java && ./run_tests.sh
+cd backend && ./.venv/bin/python -m pytest
+cd android-native/java && ./run_tests.sh    # needs a JDK on PATH
 cd android-native/cpp  && ./run_tests.sh
-DATABASE_URL=postgres://... ./scripts/run_sql_tests.sh
+
+# SQL: migrate a throwaway database, then run the suites against it
+./supabase/tests/run_migrations.sh converge_check
+PSQL="psql -d converge_check" ./scripts/run_sql_tests.sh
+./supabase/tests/run_policy_tests.sh
 ```
 
 Seven mobile suites, 62 backend tests, two native host suites and three SQL suites.

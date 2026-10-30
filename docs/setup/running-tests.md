@@ -40,17 +40,25 @@ PSQL="docker exec -i my-postgres psql -U postgres -d converge" \
   ./scripts/run_sql_tests.sh
 ```
 
-Two suites, both of which need a **freshly migrated database with no seed data**.
+Three suites. All of them need a **freshly migrated database with no seed data**.
 Some cases count rows overall, so seeded connections or conversations would make
 the expected values meaningless. The runner checks for that condition and reports
 it explicitly rather than showing a confusing count mismatch.
+
+The first two are driven by `run_sql_tests.sh`; the policy suite has its own
+runner, because it creates and migrates its own throwaway database:
+
+```bash
+./supabase/tests/run_policy_tests.sh
+```
 
 | Suite | Covers |
 | --- | --- |
 | `supabase/tests/rls_test.sql` | Row Level Security, exercised as four different members: that a member cannot read a profile outside their visibility level, cannot request a connection as somebody else, cannot create a direct conversation without a connection, cannot post into a conversation they are not part of, and that a blocked member sees nothing. |
 | `supabase/tests/schema_test.sql` | Check constraints, by attempting writes that must be refused: a waveform bar outside 0–100, a wave-bar array longer than 64, a waveform without a duration, a blank message body, more than four attachments, a duplicate conversation member, and a second owner of a community. |
+| `supabase/tests/policies.sql` | The rules that protect members, rather than the existence of the tables: photo visibility across all four levels and the block rule, the storage read policy for the private avatars bucket, nearby discovery (opt-in, discoverability, radius and blocking), and place search for global discovery. Every assertion raises on failure, so a pass cannot be vacuous. |
 
-Both suites roll their fixtures back, so they can be run repeatedly against the
+The suites roll their fixtures back, so they can be run repeatedly against the
 same database.
 
 A suite passes by printing a `TESTS PASSED` sentinel, which the runner checks for.
